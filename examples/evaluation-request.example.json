@@ -1,0 +1,143 @@
+{
+  "contract_version": "0.1.0",
+  "request_id": "REQ-DEMO-CB-001",
+  "ruleset_version": "0.1.0",
+  "ruleset_hash": null,
+  "case_snapshot": {
+    "contract_version": "0.1.0",
+    "case_id": "CASE-DEMO-CB-001",
+    "patient_ref": null,
+    "captured_at": "2026-09-26T08:30:00+02:00",
+    "nosology_code": "CHRON_BRONCHITIS",
+    "facts": {
+      "SPUTUM_PURULENCE_INCREASE": {
+        "state": "KNOWN",
+        "value": true,
+        "unit": null,
+        "observed_at": null,
+        "source": "MANUAL"
+      },
+      "DYSPNEA_WORSENING": {
+        "state": "KNOWN",
+        "value": true,
+        "unit": null,
+        "observed_at": null,
+        "source": "MANUAL"
+      },
+      "SPUTUM_VOLUME_INCREASE": {
+        "state": "KNOWN",
+        "value": false,
+        "unit": null,
+        "observed_at": null,
+        "source": "MANUAL"
+      },
+      "AGE_YEARS": {
+        "state": "KNOWN",
+        "value": 40,
+        "unit": "years",
+        "observed_at": null,
+        "source": "MANUAL"
+      },
+      "DIABETES": {
+        "state": "KNOWN",
+        "value": false,
+        "unit": null,
+        "observed_at": null,
+        "source": "MANUAL"
+      },
+      "HEART_FAILURE": {
+        "state": "KNOWN",
+        "value": false,
+        "unit": null,
+        "observed_at": null,
+        "source": "MANUAL"
+      },
+      "CHRONIC_LIVER_OR_CKD_SOURCE": {
+        "state": "KNOWN",
+        "value": false,
+        "unit": null,
+        "observed_at": null,
+        "source": "MANUAL"
+      },
+      "MALIGNANCY": {
+        "state": "KNOWN",
+        "value": false,
+        "unit": null,
+        "observed_at": null,
+        "source": "MANUAL"
+      },
+      "HB_EXAC_HOSP_12M": {
+        "state": "KNOWN",
+        "value": false,
+        "unit": null,
+        "observed_at": null,
+        "source": "MANUAL"
+      },
+      "BETA_LACTAM_INTOLERANCE": {
+        "state": "KNOWN",
+        "value": false,
+        "unit": null,
+        "observed_at": null,
+        "source": "MANUAL"
+      },
+      "QT_PROLONGATION": {
+        "state": "KNOWN",
+        "value": false,
+        "unit": null,
+        "observed_at": null,
+        "source": "MANUAL"
+      },
+      "PREGNANCY_OR_LACTATION": {
+        "state": "KNOWN",
+        "value": false,
+        "unit": null,
+        "observed_at": null,
+        "source": "MANUAL"
+      },
+      "EPILEPSY": {
+        "state": "KNOWN",
+        "value": false,
+        "unit": null,
+        "observed_at": null,
+        "source": "MANUAL"
+      },
+      "MYASTHENIA": {
+        "state": "KNOWN",
+        "value": false,
+        "unit": null,
+        "observed_at": null,
+        "source": "MANUAL"
+      },
+      "ALT_AST_GT5_ULN": {
+        "state": "KNOWN",
+        "value": false,
+        "unit": null,
+        "observed_at": null,
+        "source": "MANUAL"
+      },
+      "CHILD_PUGH_C": {
+        "state": "KNOWN",
+        "value": false,
+        "unit": null,
+        "observed_at": null,
+        "source": "MANUAL"
+      },
+      "SOY_PEANUT_HYPERSENSITIVITY": {
+        "state": "KNOWN",
+        "value": false,
+        "unit": null,
+        "observed_at": null,
+        "source": "MANUAL"
+      }
+    },
+    "concomitant_drug_ids": [],
+    "metadata": {
+      "demo": true
+    }
+  },
+  "options": {
+    "include_trace": true,
+    "strict_mode": true,
+    "max_steps": 100
+  }
+}

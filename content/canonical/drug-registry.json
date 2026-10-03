@@ -1,0 +1,142 @@
+{
+  "package_type": "drug_registry",
+  "version": "0.1.0",
+  "status": "DRAFT",
+  "drugs": [
+    {
+      "drug_id": 1,
+      "generic_name_ru": "Амоксициллин",
+      "normalized_code": "AMOXICILLIN",
+      "active": true,
+      "aliases": [
+        "AMOXICILLIN"
+      ]
+    },
+    {
+      "drug_id": 2,
+      "generic_name_ru": "Амоксициллин + клавулановая кислота",
+      "normalized_code": "AMOXICILLIN_CLAVULANATE",
+      "active": true,
+      "aliases": [
+        "AMOXICILLIN CLAVULANATE"
+      ]
+    },
+    {
+      "drug_id": 3,
+      "generic_name_ru": "Азитромицин",
+      "normalized_code": "AZITHROMYCIN",
+      "active": true,
+      "aliases": [
+        "AZITHROMYCIN"
+      ]
+    },
+    {
+      "drug_id": 4,
+      "generic_name_ru": "Кларитромицин",
+      "normalized_code": "CLARITHROMYCIN",
+      "active": true,
+      "aliases": [
+        "CLARITHROMYCIN"
+      ]
+    },
+    {
+      "drug_id": 5,
+      "generic_name_ru": "Спирамицин",
+      "normalized_code": "SPIRAMYCIN",
+      "active": true,
+      "aliases": [
+        "SPIRAMYCIN"
+      ]
+    },
+    {
+      "drug_id": 6,
+      "generic_name_ru": "Клиндамицин",
+      "normalized_code": "CLINDAMYCIN",
+      "active": true,
+      "aliases": [
+        "CLINDAMYCIN"
+      ]
+    },
+    {
+      "drug_id": 7,
+      "generic_name_ru": "Доксициклин",
+      "normalized_code": "DOXYCYCLINE",
+      "active": true,
+      "aliases": [
+        "DOXYCYCLINE"
+      ]
+    },
+    {
+      "drug_id": 8,
+      "generic_name_ru": "Левофлоксацин",
+      "normalized_code": "LEVOFLOXACIN",
+      "active": true,
+      "aliases": [
+        "LEVOFLOXACIN"
+      ]
+    },
+    {
+      "drug_id": 9,
+      "generic_name_ru": "Моксифлоксацин",
+      "normalized_code": "MOXIFLOXACIN",
+      "active": true,
+      "aliases": [
+        "MOXIFLOXACIN"
+      ]
+    },
+    {
+      "drug_id": 10,
+      "generic_name_ru": "Ципрофлоксацин",
+      "normalized_code": "CIPROFLOXACIN",
+      "active": true,
+      "aliases": [
+        "CIPROFLOXACIN"
+      ]
+    },
+    {
+      "drug_id": 11,
+      "generic_name_ru": "Цефдиторен",
+      "normalized_code": "CEFDITOREN",
+      "active": true,
+      "aliases": [
+        "CEFDITOREN"
+      ]
+    },
+    {
+      "drug_id": 12,
+      "generic_name_ru": "Цефподоксим",
+      "normalized_code": "CEFPODOXIME",
+      "active": true,
+      "aliases": [
+        "CEFPODOXIME"
+      ]
+    },
+    {
+      "drug_id": 13,
+      "generic_name_ru": "Цефуроксим",
+      "normalized_code": "CEFUROXIME",
+      "active": true,
+      "aliases": [
+        "CEFUROXIME"
+      ]
+    },
+    {
+      "drug_id": 14,
+      "generic_name_ru": "Цефиксим",
+      "normalized_code": "CEFIXIME",
+      "active": true,
+      "aliases": [
+        "CEFIXIME"
+      ]
+    },
+    {
+      "drug_id": 15,
+      "generic_name_ru": "Цефалексин",
+      "normalized_code": "CEPHALEXIN",
+      "active": true,
+      "aliases": [
+        "CEPHALEXIN"
+      ]
+    }
+  ]
+}

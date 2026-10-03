@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client"
+  output = "../generated"
+}
+datasource db {
+  provider = "postgresql"
+}
+model User {
+  id String @id @db.Uuid
+  login String @unique
+  role String
+  active Boolean @default(true)
+  data Json
+  sessions Session[]
+  cases ClinicalCase[]
+  revisions CaseRevision[]
+  evaluations Evaluation[]
+  feedback ClinicianFeedback[]
+  audit AuditEvent[]
+  @@map("users")
+}
+model Session {
+  id String @id @db.Char(64)
+  userId String @map("user_id") @db.Uuid
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+  data Json
+  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+model ClinicalCase {
+  id String @id @db.Uuid
+  ownerId String @map("owner_id") @db.Uuid
+  revision Int
+  data Json
+  owner User @relation(fields:[ownerId],references:[id],onDelete:Restrict)
+  revisions CaseRevision[]
+  evaluations Evaluation[]
+  @@index([ownerId])
+  @@map("clinical_cases")
+}
+model CaseRevision {
+  id String @id @db.Uuid
+  caseId String @map("case_id") @db.Uuid
+  revision Int
+  createdBy String @map("created_by") @db.Uuid
+  data Json
+  clinicalCase ClinicalCase @relation(fields:[caseId],references:[id],onDelete:Restrict)
+  creator User @relation(fields:[createdBy],references:[id],onDelete:Restrict)
+  @@unique([caseId,revision])
+  @@index([createdBy])
+  @@map("case_revisions")
+}
+model Evaluation {
+  id String @id @db.Uuid
+  caseId String @map("case_id") @db.Uuid
+  ownerId String @map("owner_id") @db.Uuid
+  data Json
+  clinicalCase ClinicalCase @relation(fields:[caseId],references:[id],onDelete:Restrict)
+  owner User @relation(fields:[ownerId],references:[id],onDelete:Restrict)
+  feedback ClinicianFeedback[]
+  @@index([caseId])
+  @@index([ownerId])
+  @@map("evaluations")
+}
+model ClinicianFeedback {
+  id String @id @db.Uuid
+  evaluationId String @map("evaluation_id") @db.Uuid
+  userId String @map("user_id") @db.Uuid
+  data Json
+  evaluation Evaluation @relation(fields:[evaluationId],references:[id],onDelete:Restrict)
+  user User @relation(fields:[userId],references:[id],onDelete:Restrict)
+  @@index([evaluationId])
+  @@index([userId])
+  @@map("clinician_feedback")
+}
+model ContentPackage {
+  id String @id @db.Uuid
+  packageType String @map("package_type")
+  version String
+  status String
+  sha256 String @db.Char(64)
+  data Json
+  activations ContentPackageActivation[]
+  @@unique([packageType,version])
+  @@index([status])
+  @@map("content_packages")
+}
+model ContentPackageActivation {
+  id String @id @db.Uuid
+  packageId String @map("package_id") @db.Uuid
+  packageType String @map("package_type")
+  createdAt DateTime @map("created_at") @db.Timestamptz(3)
+  data Json
+  contentPackage ContentPackage @relation(fields:[packageId],references:[id],onDelete:Restrict)
+  @@index([packageId])
+  @@index([packageType,createdAt])
+  @@map("content_package_activations")
+}
+model AuditEvent {
+  id String @id @db.Uuid
+  actorId String? @map("actor_id") @db.Uuid
+  action String
+  createdAt DateTime @map("created_at") @db.Timestamptz(3)
+  data Json
+  actor User? @relation(fields:[actorId],references:[id],onDelete:Restrict)
+  @@index([actorId,createdAt])
+  @@index([action,createdAt])
+  @@map("audit_events")
+}

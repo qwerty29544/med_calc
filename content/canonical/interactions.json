@@ -1,0 +1,47 @@
+{
+  "package_type": "interaction_ruleset",
+  "version": "0.1.0",
+  "status": "DRAFT",
+  "rules": [
+    {
+      "rule_id": "DDI-0001",
+      "drug_id": 3,
+      "nosology_code": "ALL",
+      "action": "BLOCK",
+      "message": "[MOCK] Комбинация запрещает автоматическое предложение основного препарата.",
+      "source": "Нет клинического источника: демонстрация формата",
+      "enabled": false,
+      "validation_status": "MOCK_EXAMPLE"
+    },
+    {
+      "rule_id": "DDI-0002",
+      "drug_id": 4,
+      "nosology_code": "ALL",
+      "action": "WARN",
+      "message": "[MOCK] Комбинация допустима только с предупреждением/наблюдением.",
+      "source": "Нет клинического источника: демонстрация формата",
+      "enabled": false,
+      "validation_status": "MOCK_EXAMPLE"
+    },
+    {
+      "rule_id": "DDI-0003",
+      "drug_id": 1,
+      "nosology_code": "ALL",
+      "action": "ALLOW",
+      "message": "[MOCK] В рамках данного правила дополнительного ограничения нет.",
+      "source": "Нет клинического источника: демонстрация формата",
+      "enabled": false,
+      "validation_status": "MOCK_EXAMPLE"
+    },
+    {
+      "rule_id": "DDI-0004",
+      "drug_id": 8,
+      "nosology_code": "ALL",
+      "action": "REVIEW_REQUIRED",
+      "message": "[MOCK] Категория не классифицирована; требуется ручная оценка/уточнение справочника.",
+      "source": "Нет клинического источника: демонстрация формата",
+      "enabled": false,
+      "validation_status": "MOCK_EXAMPLE"
+    }
+  ]
+}

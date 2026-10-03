@@ -1,0 +1,107 @@
+{
+  "package_type": "contraindication_ruleset",
+  "version": "0.1.0",
+  "status": "DRAFT",
+  "rules": [
+    {
+      "rule_id": "CI-0001",
+      "drug_id": 8,
+      "nosology_code": "ALL",
+      "condition": {
+        "kind": "OP",
+        "operator": "EQ",
+        "operands": [
+          {
+            "kind": "REF",
+            "ref_type": "FACT",
+            "ref_id": "QT_PROLONGATION"
+          },
+          {
+            "kind": "LITERAL",
+            "value": true
+          }
+        ]
+      },
+      "action": "BLOCK",
+      "message": "[MOCK] Исключить препарат из списка кандидатов при выполнении критерия.",
+      "source": "Пример структуры; критерий встречается в ТЗ",
+      "enabled": false,
+      "validation_status": "MOCK_EXAMPLE"
+    },
+    {
+      "rule_id": "CI-0002",
+      "drug_id": 4,
+      "nosology_code": "ALL",
+      "condition": {
+        "kind": "OP",
+        "operator": "EQ",
+        "operands": [
+          {
+            "kind": "REF",
+            "ref_type": "FACT",
+            "ref_id": "MYASTHENIA"
+          },
+          {
+            "kind": "LITERAL",
+            "value": true
+          }
+        ]
+      },
+      "action": "WARN",
+      "message": "[MOCK] Сохранить кандидат, но вывести предупреждение врачу.",
+      "source": "Пример структуры; критерий встречается в ТЗ",
+      "enabled": false,
+      "validation_status": "MOCK_EXAMPLE"
+    },
+    {
+      "rule_id": "CI-0003",
+      "drug_id": 7,
+      "nosology_code": "ALL",
+      "condition": {
+        "kind": "OP",
+        "operator": "EQ",
+        "operands": [
+          {
+            "kind": "REF",
+            "ref_type": "FACT",
+            "ref_id": "SEVERE_LIVER_FAILURE"
+          },
+          {
+            "kind": "LITERAL",
+            "value": true
+          }
+        ]
+      },
+      "action": "REVIEW_REQUIRED",
+      "message": "[MOCK] Не принимать автоматическое решение; требуется ручная оценка.",
+      "source": "Пример структуры; критерий встречается в ТЗ",
+      "enabled": false,
+      "validation_status": "MOCK_EXAMPLE"
+    },
+    {
+      "rule_id": "CI-0004",
+      "drug_id": 1,
+      "nosology_code": "ALL",
+      "condition": {
+        "kind": "OP",
+        "operator": "EQ",
+        "operands": [
+          {
+            "kind": "REF",
+            "ref_type": "FACT",
+            "ref_id": "NO_RELEVANT_RESTRICTION"
+          },
+          {
+            "kind": "LITERAL",
+            "value": true
+          }
+        ]
+      },
+      "action": "REVIEW_REQUIRED",
+      "message": "[MOCK] Критерий не меняет кандидат.",
+      "source": "Синтетический пример действия",
+      "enabled": false,
+      "validation_status": "MOCK_EXAMPLE"
+    }
+  ]
+}

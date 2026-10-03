@@ -1,0 +1,11 @@
+packages:
+  - apps/*
+  - packages/*
+allowBuilds:
+  '@prisma/engines': true
+  prisma: true
+  esbuild: true
+  sharp: true
+  embedded-postgres: true
+  '@embedded-postgres/windows-x64': true
+  '@embedded-postgres/linux-x64': true

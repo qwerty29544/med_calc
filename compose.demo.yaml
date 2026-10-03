@@ -1,0 +1,13 @@
+# Тестовый сервер: демонстрационные роли, DRAFT-контент и отдельная постоянная база.
+# Использовать вместе с compose.yaml, без compose.production.yaml.
+name: med-calc-demo
+services:
+  api:
+    environment:
+      NODE_ENV: development
+      DEMO_MODE: 'true'
+      APP_ORIGIN: ${APP_ORIGIN:?Укажите адрес тестового сервера в .env.demo}
+  web:
+    environment:
+      NODE_ENV: production
+      DEMO_MODE: 'true'

@@ -1,0 +1,32 @@
+BASE_URL=http://127.0.0.1:8080
+Command: node node_modules/@playwright/test/cli.js test tests/e2e/web.spec.ts
+
+Running 18 tests using 1 worker
+
+(node:25372) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [desktop] › tests\e2e\web.spec.ts:3:1 › неавторизованный пользователь попадает на вход (678ms)
+  ok  2 [desktop] › tests\e2e\web.spec.ts:9:1 › врач создаёт случай, сохраняет неизвестный ответ и возвращается к черновику (3.6s)
+  ok  3 [desktop] › tests\e2e\web.spec.ts:73:1 › результат остаётся неизменным, доступен в истории и принимает обратную связь (3.0s)
+  ok  4 [desktop] › tests\e2e\web.spec.ts:120:1 › скорректированный режим отделён от исходной схемы и содержит нагрузочную дозу (511ms)
+  ok  5 [desktop] › tests\e2e\web.spec.ts:191:1 › системный администратор видит пользователей, но не публикацию медицинского контента (887ms)
+  ok  6 [desktop] › tests\e2e\web.spec.ts:206:1 › каждая из шести нозологий проходит серверный путь и сохраняет текст результата (12.4s)
+  ok  7 [desktop] › tests\e2e\web.spec.ts:262:1 › клинический администратор видит отчёт проверки и не публикует неподтверждённый пакет (1.4s)
+  ok  8 [desktop] › tests\e2e\web.spec.ts:283:1 › запоздалый preview не заменяет вопрос после сохранения новых данных (586ms)
+  ok  9 [desktop] › tests\e2e\web.spec.ts:380:1 › планшетное меню скрыто от клавиатуры и закрывается клавишей Escape (454ms)
+(node:17620) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 10 [tablet] › tests\e2e\web.spec.ts:3:1 › неавторизованный пользователь попадает на вход (795ms)
+  ok 11 [tablet] › tests\e2e\web.spec.ts:9:1 › врач создаёт случай, сохраняет неизвестный ответ и возвращается к черновику (3.4s)
+  ok 12 [tablet] › tests\e2e\web.spec.ts:73:1 › результат остаётся неизменным, доступен в истории и принимает обратную связь (3.4s)
+  ok 13 [tablet] › tests\e2e\web.spec.ts:120:1 › скорректированный режим отделён от исходной схемы и содержит нагрузочную дозу (592ms)
+  ok 14 [tablet] › tests\e2e\web.spec.ts:191:1 › системный администратор видит пользователей, но не публикацию медицинского контента (941ms)
+  ok 15 [tablet] › tests\e2e\web.spec.ts:206:1 › каждая из шести нозологий проходит серверный путь и сохраняет текст результата (14.0s)
+  ok 16 [tablet] › tests\e2e\web.spec.ts:262:1 › клинический администратор видит отчёт проверки и не публикует неподтверждённый пакет (1.6s)
+  ok 17 [tablet] › tests\e2e\web.spec.ts:283:1 › запоздалый preview не заменяет вопрос после сохранения новых данных (648ms)
+  ok 18 [tablet] › tests\e2e\web.spec.ts:380:1 › планшетное меню скрыто от клавиатуры и закрывается клавишей Escape (537ms)
+
+  18 passed (51.5s)
+
+Exit code: 0
+

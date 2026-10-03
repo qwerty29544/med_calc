@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "clinical_hash": "4348fd9f1f1ef478c10a78489e9cdbef5d7b002ae7a3d1a419a5ddb42c9fc65d",
+  "source_hash": "6b22d4774d12099651896cf0c156df9fba90569a0b8ff24bb726d2bba7d79569",
+  "nodes": 133,
+  "edges": 148,
+  "facts": 75,
+  "options": 184,
+  "drugs": 15,
+  "medical_approval": false,
+  "normalizations": [
+    "FORMALIZED_ZERO_NONZERO → FORMALIZED_COMPOSITE_FROM_SOURCE_TEXT (метаданные с сохранением исходного статуса)",
+    "AB-N002 input_ref: обозначение составного выражения перенесено в notes; все клинические ссылки находятся в AST",
+    "EXCLUDE → BLOCK; KEEP_WITH_WARNING/WARNING → WARN; mock enabled=false"
+  ]
+}

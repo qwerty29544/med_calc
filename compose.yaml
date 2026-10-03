@@ -1,0 +1,103 @@
+name: med-calc
+
+x-app: &app
+  image: med-calc:0.1.0
+  build:
+    context: .
+    args:
+      API_URL: http://api:3001
+  init: true
+
+services:
+  postgres:
+    image: postgres:18.4
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: medcalc
+      POSTGRES_USER: medcalc
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Запустите start-docker.cmd для создания .env.docker}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U medcalc -d medcalc']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    logging: &logging
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+  migrate:
+    <<: *app
+    command:
+      [
+        'node',
+        'node_modules/prisma/build/index.js',
+        'migrate',
+        'deploy',
+        '--config',
+        'packages/db/prisma.config.ts',
+      ]
+    environment:
+      DATABASE_URL: postgresql://medcalc:${POSTGRES_PASSWORD}@postgres:5432/medcalc
+    depends_on:
+      postgres:
+        condition: service_healthy
+    logging: *logging
+  api:
+    <<: *app
+    restart: unless-stopped
+    command: ['node', '--import', 'tsx', 'apps/api/src/server.ts']
+    environment:
+      NODE_ENV: development
+      DEMO_MODE: 'true'
+      API_HOST: 0.0.0.0
+      API_PORT: 3001
+      DATABASE_URL: postgresql://medcalc:${POSTGRES_PASSWORD}@postgres:5432/medcalc
+      APP_ORIGIN: http://localhost:${WEB_PORT:-8080},http://127.0.0.1:${WEB_PORT:-8080}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3001/api/v1/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    logging: *logging
+  web:
+    <<: *app
+    restart: unless-stopped
+    command: ['node', 'node_modules/next/dist/bin/next', 'start', 'apps/web', '--hostname', '0.0.0.0']
+    environment:
+      NODE_ENV: production
+      DEMO_MODE: 'true'
+      API_URL: http://api:3001
+    ports:
+      - '127.0.0.1:${WEB_PORT:-8080}:3000'
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/login').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    logging: *logging
+
+volumes:
+  postgres_data:

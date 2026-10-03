@@ -1,0 +1,13 @@
+node_modules
+.npm-cache
+.pnpm-store
+.data
+**/.next
+packages/db/generated
+content
+schemas
+examples
+docs/source
+pnpm-lock.yaml
+playwright-report
+test-results

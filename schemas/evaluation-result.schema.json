@@ -1,0 +1,267 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:cdss:rule-engine:evaluation-result:0.1.0",
+  "title": "Rule Engine Evaluation Result v0.1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "evaluation_id",
+    "request_id",
+    "ruleset_version",
+    "status",
+    "started_at",
+    "finished_at",
+    "steps_executed",
+    "missing_facts",
+    "errors"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "0.1.0"
+    },
+    "evaluation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ruleset_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ruleset_hash": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "status": {
+      "enum": [
+        "COMPLETED",
+        "NEEDS_INPUT",
+        "FAILED"
+      ]
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "finished_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "steps_executed": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "outcome": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "scheme_id"
+          ],
+          "properties": {
+            "type": {
+              "const": "TREATMENT_SCHEME"
+            },
+            "scheme_id": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "terminal_code"
+          ],
+          "properties": {
+            "type": {
+              "const": "TERMINAL_STATE"
+            },
+            "terminal_code": {
+              "enum": [
+                "ABT_NOT_INDICATED",
+                "NO_APPLICABLE_DRUG",
+                "NOT_COVERED_BY_GUIDELINE",
+                "ESCALATE_HOSPITALIZATION"
+              ]
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "missing_facts": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9_]*$"
+      }
+    },
+    "trace": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/TraceStep"
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/EngineError"
+      }
+    },
+    "engine_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "engine_version": {
+          "type": "string"
+        },
+        "duration_ms": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  },
+  "$defs": {
+    "TraceStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sequence",
+        "node_id",
+        "node_type",
+        "status",
+        "edge_evaluations"
+      ],
+      "properties": {
+        "sequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "node_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "node_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "EVALUATED",
+            "BLOCKED_MISSING_INPUT",
+            "TERMINAL"
+          ]
+        },
+        "inputs": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "edge_evaluations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "edge_id",
+              "result"
+            ],
+            "properties": {
+              "edge_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "result": {
+                "enum": [
+                  "TRUE",
+                  "FALSE",
+                  "UNKNOWN",
+                  "NOT_EVALUATED"
+                ]
+              },
+              "selected": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "selected_edge_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "next_node_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "score_details": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        }
+      }
+    },
+    "EngineError": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "enum": [
+            "INVALID_CASE",
+            "UNKNOWN_FACT_CODE",
+            "FACT_TYPE_MISMATCH",
+            "MISSING_REQUIRED_FACT",
+            "MISSING_REFERENCE",
+            "NO_BRANCH_MATCH",
+            "AMBIGUOUS_BRANCH",
+            "STEP_LIMIT_EXCEEDED",
+            "RULESET_NOT_PUBLISHED",
+            "RULESET_HASH_MISMATCH",
+            "INTERNAL_ERROR"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "node_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "details": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        }
+      }
+    }
+  }
+}

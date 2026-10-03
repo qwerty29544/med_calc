@@ -1,0 +1,10 @@
+{
+  "valid": true,
+  "errors": [],
+  "warnings": [
+    {
+      "code": "UNPUBLISHED_CONTENT",
+      "message": "Пакет не опубликован; допустим только демонстрационный запуск."
+    }
+  ]
+}

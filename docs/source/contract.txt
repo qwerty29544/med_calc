@@ -1,0 +1,310 @@
+Формальная спецификация контракта Rule Engine
+Clinical Decision Support System · Contract version 0.1.0
+Статус: DRAFT NORMATIVE SPECIFICATIONОснование: ruleset 0.1.0, формализованный из ТЗ медицинской команды и согласованных архитектурных решений проекта
+
+Содержание
+1. Назначение и область действия
+2. Нормативная терминология
+3. Архитектурные границы
+4. Версионирование и идентичность ruleset
+5. Модель фактов пациента
+6. Декларативные выражения и AST
+7. Score groups
+8. Граф клинических правил
+9. Терминальные состояния и схемы
+10. Семантика исполнения
+11. DecisionTrace
+12. Ошибки и статусы выполнения
+13. Валидация пакета правил
+14. Публикация и жизненный цикл
+15. Контракты интеграции с последующими стадиями
+16. Форматы запросов и результатов
+17. Тестирование и критерии приемки
+18. Безопасность и воспроизводимость
+Приложение A. Коды v0.1.0
+Приложение B. Машиночитаемые схемы и примеры
+Приложение C. Миграция текущего ruleset v0.1.0
+
+1. Назначение и область действия
+Этот документ определяет нормативный контракт между источниками медицинских правил, компилятором/валидатором правил, runtime Rule Engine и прикладным backend. Контракт фиксирует форму данных, семантику исполнения, правила обработки отсутствующих значений, структуру трассировки, версионирование и ошибки для версии 0.1.0.
+RE-001 [MUST] Runtime Rule Engine MUST быть детерминированным: одинаковый PatientCase snapshot и идентичный опубликованный RulePackage должны приводить к одному и тому же результату и DecisionTrace.
+RE-002 [MUST] Rule Engine MUST реализовываться как чистая вычислительная функция относительно RulePackage и PatientCase snapshot; запись в БД, сетевые вызовы, UI и побочные действия не являются обязанностью ядра.
+RE-003 [MUST] Контракт v0.1.0 охватывает клинический выбор схемы и интерфейсы к последующим стадиям. Противопоказания, лекарственные взаимодействия и коррекция дозы являются отдельными модулями и не должны быть зашиты в код клинического графа.
+RE-004 [MUST] Авторские/ревью-форматы (Excel, презентация, промежуточный JSON) MAY использоваться для подготовки правил, но production runtime MUST исполнять только канонический валидированный RulePackage.
+1.1. Область ruleset 0.1.0
+nosology_code
+Нозология
+CHRON_BRONCHITIS
+Хронический бронхит
+ACUTE_BRONCHITIS
+Острый бронхит
+PNEUMONIA
+Пневмония
+COPD_EXAC
+ХОБЛ, обострение
+TONSILLOPHARYNGITIS
+Фарингит и тонзиллит
+SINUSITIS
+Синусит
+
+1.2. Вне области ядра
+Аутентификация и авторизация пользователей.
+Хранение персональных данных и политика их обезличивания.
+UI врача и административный редактор.
+OCR/импорт документов.
+Независимая медицинская валидация клинических рекомендаций.
+Выбор конкретной технологии backend или СУБД.
+2. Нормативная терминология
+Термин
+Семантика
+MUST / MUST NOT
+Обязательное требование контракта. Нарушение делает реализацию несовместимой.
+SHOULD / SHOULD NOT
+Рекомендуемое требование; отклонение допустимо только при зафиксированном техническом обосновании.
+MAY
+Допустимая опциональная возможность.
+RulePackage
+Неизменяемый опубликованный пакет медицинских правил.
+PatientCase snapshot
+Снимок входных фактов пациента на момент конкретного вычисления.
+DecisionTrace
+Структурированная трасса каждого шага вычисления.
+Authoring representation
+Excel/редактор/промежуточная модель, не исполняемая напрямую production runtime.
+Canonical representation
+JSON-структура, прошедшая schema + semantic validation и допускаемая к исполнению.
+
+3. Архитектурные границы
+PatientCase snapshot        │        ▼Fact validation / Derived facts        │        ▼Clinical Rule Engine ──► Scheme ID | Terminal State        │        ▼Scheme Resolver ──► Candidate Treatment Options        │        ▼Safety Engine (contraindications + DDI)        │        ▼Dose Engine        │        ▼Recommendation Composer
+RE-010 [MUST] Clinical Rule Engine MUST завершать работу идентификатором Treatment Scheme либо Terminal State. Он MUST NOT формировать свободный медицинский текст назначения.
+RE-011 [MUST] Scheme Resolver MUST быть отдельным компонентом, отображающим scheme_id в структурированные TreatmentOption.
+RE-012 [MUST] Safety Engine MUST получать структурированные кандидаты и MUST сохранять исключенные варианты с причинами; запрещенные варианты не должны физически исчезать из аудиторского результата.
+RE-013 [MUST] Dose Engine MUST работать после выбора допустимого препарата. При отсутствии данных, необходимых для коррекции дозы, v0.1.0 использует политику USE_BASE_REGIMEN.
+4. Версионирование и идентичность ruleset
+RE-020 [MUST] ruleset_version MUST использовать SemVer-подобное значение. Текущий семейный диапазон контракта: 0.1.x.
+RE-021 [MUST] Опубликованный RulePackage MUST быть immutable. Любое изменение медицинского содержания MUST создавать новую версию.
+RE-022 [MUST] Версия приложения, Rule Engine, clinical ruleset, drug registry, contraindications, interactions и dose rules MUST храниться раздельно.
+{  "application_version": "0.4.0",  "rule_engine_version": "0.1.0",  "clinical_rules": "0.1.0",  "drug_registry": "0.1.0",  "contraindications": "0.1.0",  "interactions": "0.1.0",  "dose_rules": "0.1.0"}
+RE-023 [MUST] Published RulePackage SHOULD иметь SHA-256 hash канонического JSON. Evaluation SHOULD сохранять ruleset_version и ruleset_hash.
+RE-024 [MUST] Hash MUST вычисляться над канонической сериализацией содержимого пакета без поля ruleset_hash; рекомендуемая канонизация — детерминированная JSON-сериализация с фиксированным порядком ключей либо RFC 8785 JCS.
+5. Модель фактов пациента
+Каждый медицинский вход является типизированным FactDefinition. Состояние значения отделено от самого значения.
+RE-030 [MUST] Fact code MUST быть стабильным машинным идентификатором и MUST NOT зависеть от отображаемого русского текста.
+RE-031 [MUST] FactDefinition MUST задавать data_type. Допустимые типы v0.1.0: BOOLEAN, INTEGER, DECIMAL, ENUM, STRING, DATE.
+RE-032 [MUST] Факт пациента MUST иметь state: KNOWN, UNKNOWN либо NOT_ASSESSED. Boolean FALSE является известным отрицательным значением и MUST NOT смешиваться с UNKNOWN.
+RE-033 [MUST] Если state=KNOWN, поле value MUST присутствовать и пройти type/unit validation. Если state=UNKNOWN или NOT_ASSESSED, value MUST быть null.
+{  "AGE_YEARS": {    "state": "KNOWN",    "value": 72,    "unit": "years",    "source": "MANUAL"  },  "CRP": {    "state": "UNKNOWN",    "value": null,    "unit": "mg/L",    "source": "UNKNOWN"  },  "DIABETES": {    "state": "KNOWN",    "value": false,    "unit": null,    "source": "MANUAL"  }}
+5.1. Семантика отсутствующих данных
+RE-034 [MUST] Неизвестный обязательный факт MUST NOT автоматически интерпретироваться как FALSE.
+RE-035 [MUST] Базовая политика клинических decision nodes v0.1.0 — BLOCK_EVALUATION_IF_REQUIRED: если исход ветви нельзя определить из-за UNKNOWN/NOT_ASSESSED, результат evaluation становится NEEDS_INPUT.
+RE-036 [MUST] TREAT_AS_FALSE и TREAT_AS_TRUE MAY использоваться только как явно заданная политика конкретного FactDefinition/правила и SHOULD сопровождаться source/provenance.
+6. Декларативные выражения и AST
+Runtime MUST NOT исполнять произвольные строки выражений через eval/exec. Строковое выражение MAY храниться только как display_expression для отладки и ревью.
+RE-040 [MUST] Исполняемое условие edge MUST быть представлено типизированным AST.
+RE-041 [MUST] AST v0.1.0 MUST поддерживать REF, LITERAL и OP nodes.
+RE-042 [MUST] Допустимые операторы: EQ, NEQ, GT, GTE, LT, LTE, IN, NOT_IN, BETWEEN, AND, OR, NOT, IS_KNOWN, IS_UNKNOWN.
+{  "kind": "OP",  "operator": "GT",  "operands": [    {      "kind": "REF",      "ref_type": "FACT",      "ref_id": "AGE_YEARS"    },    {      "kind": "LITERAL",      "value": 65,      "unit": "years"    }  ]}
+{  "kind": "OP",  "operator": "GTE",  "operands": [    {      "kind": "REF",      "ref_type": "SCORE",      "ref_id": "CB_RISK6_SOURCE"    },    {      "kind": "LITERAL",      "value": 1    }  ]}
+6.1. Трехзначная логика
+Результат вычисления выражения до применения политики node может быть TRUE, FALSE или UNKNOWN. Для AND/OR рекомендуется логика Kleene: FALSE AND UNKNOWN = FALSE; TRUE AND UNKNOWN = UNKNOWN; TRUE OR UNKNOWN = TRUE; FALSE OR UNKNOWN = UNKNOWN; NOT UNKNOWN = UNKNOWN.
+RE-043 [MUST] Edge condition evaluator MUST возвращать TRUE/FALSE/UNKNOWN, а не исключение при обычном отсутствии клинического значения.
+7. Score groups
+RE-050 [MUST] ScoreGroup MUST быть декларативным набором ScoreItem. Каждый ScoreItem содержит weight и AST condition.
+RE-051 [MUST] Score MUST вычисляться только по ScoreItem, чье condition == TRUE. FALSE дает 0. UNKNOWN MUST приводить к UNKNOWN score, если item потенциально влияет на сравниваемый итог и нет явной политики обработки.
+RE-052 [MUST] DecisionTrace MUST хранить total score и вклад каждого элемента, участвовавшего в вычислении.
+{  "score_group_id": "CB_MAJOR2",  "items": [    {      "item_id": "DYSPNEA",      "weight": 1,      "condition": {        "kind": "OP",        "operator": "EQ",        "operands": [          {            "kind": "REF",            "ref_type": "FACT",            "ref_id": "DYSPNEA_WORSENING"          },          {            "kind": "LITERAL",            "value": true          }        ]      }    },    {      "item_id": "SPUTUM_VOLUME",      "weight": 1,      "condition": {        "kind": "OP",        "operator": "EQ",        "operands": [          {            "kind": "REF",            "ref_type": "FACT",            "ref_id": "SPUTUM_VOLUME_INCREASE"          },          {            "kind": "LITERAL",            "value": true          }        ]      }    }  ]}
+8. Граф клинических правил
+RE-060 [MUST] Каждая нозология MUST иметь ровно один root_node_id.
+RE-061 [MUST] Граф MUST быть ациклическим. Любой cycle является publish-blocking error.
+RE-062 [MUST] Все nodes MUST быть достижимы от root соответствующей нозологии.
+RE-063 [MUST] Node types v0.1.0: BOOLEAN_DECISION, SCORE_DECISION, RANGE_DECISION, ENUM_DECISION, COMPOSITE_DECISION, TERMINAL_SCHEME, TERMINAL_STATE.
+RE-064 [MUST] Terminal nodes MUST NOT иметь исходящих edges.
+RE-065 [MUST] Decision node MUST иметь минимум один исходящий edge; для обычной клинической развилки SHOULD иметь минимум два.
+RE-066 [MUST] priority определяет стабильный порядок проверки/отображения, но MUST NOT использоваться для молчаливого разрешения двух одновременно истинных ветвей. Два TRUE edge означают AMBIGUOUS_BRANCH.
+{  "node_id": "CB-N003",  "nosology_code": "CHRON_BRONCHITIS",  "node_type": "SCORE_DECISION",  "input_ref": "CB_RISK6_SOURCE",  "unknown_behavior": "BLOCK_EVALUATION_IF_REQUIRED",  "resolution_status": "SOURCE_LITERAL"}
+{  "edge_id": "CB-E006",  "from_node_id": "CB-N003",  "to_node_id": "CB-S2-N001",  "branch_code": "GE1",  "condition": {    "kind": "OP",    "operator": "GTE",    "operands": [      {        "kind": "REF",        "ref_type": "SCORE",        "ref_id": "CB_RISK6_SOURCE"      },      {        "kind": "LITERAL",        "value": 1      }    ]  },  "priority": 20,  "resolution_status": "SOURCE_LITERAL"}
+8.1. Provenance и нормализация источника
+RE-067 [MUST] Каждый медицински значимый node/edge/scheme/score group SHOULD иметь SourceRef.
+RE-068 [MUST] Если машинная логика не является буквальной транскрипцией источника, resolution_status MUST отражать способ нормализации.
+resolution_status
+Назначение
+SOURCE_LITERAL
+Прямая формализация текста/ветви источника.
+RESOLVED_BY_RANK
+Несовпадающие буквенные подсхемы сопоставлены по согласованному порядковому рангу.
+RESOLVED_BY_PARENT_CONTEXT_AND_RANK
+Ошибочный номер подсхемы нормализован по родительской схеме и рангу.
+FORMALIZED_COMPOSITE_FROM_SOURCE_TEXT
+Естественный медицинский текст преобразован в логическое AST-выражение.
+SOURCE_LAYOUT_INFERRED
+Подпись перехода отсутствовала и восстановлена из структуры/расположения источника.
+NORMALIZED_SOURCE_TYPO_PENDING_CONFIRMATION
+Явная техническая нормализация вероятной опечатки с сохранением необходимости экспертного подтверждения.
+
+9. Терминальные состояния и схемы
+terminal_code
+Семантика
+ABT_NOT_INDICATED
+Клинический граф завершен выводом, что антибактериальная терапия не показана.
+NO_APPLICABLE_DRUG
+Кандидаты существовали, но последующие safety-фильтры исключили все варианты.
+NOT_COVERED_BY_GUIDELINE
+Комбинация условий не предусмотрена текущими клиническими рекомендациями/ruleset.
+ESCALATE_HOSPITALIZATION
+Требуется эскалация маршрута/рассмотрение госпитализации вместо обычной амбулаторной схемы.
+
+RE-070 [MUST] Core clinical graph MUST возвращать либо TREATMENT_SCHEME, либо TERMINAL_STATE.
+RE-071 [MUST] NO_APPLICABLE_DRUG зарезервирован для полного pipeline после Safety Engine и MAY отсутствовать как исход core clinical graph.
+RE-072 [MUST] Внутренний scheme_id MUST быть стабильным и SHOULD использовать parent scheme + rank, а не визуальную буквенную подпись источника.
+Пример: четвертая подветвь схемы 2 хронического бронхита хранится как CB_S2_R4; подписи дерева/таблицы сохраняются отдельно как provenance.
+10. Семантика исполнения
+Нормативный алгоритм core evaluator:
+Проверить совместимость contract_version и ruleset_version.
+Проверить, что RulePackage имеет допустимый lifecycle status; production MUST исполнять PUBLISHED.
+Валидировать PatientCase против FactDefinition.
+Определить root_node_id по nosology_code.
+Для текущего decision node вычислить условия всех релевантных edges в стабильном порядке priority, edge_id.
+Если ровно один edge == TRUE — выбрать его и перейти к to_node_id.
+Если ни один TRUE, но хотя бы один UNKNOWN и node policy блокирующая — завершить NEEDS_INPUT и вернуть missing_facts.
+Если два или более edge == TRUE — завершить FAILED / AMBIGUOUS_BRANCH.
+Если ни один edge не TRUE и нет UNKNOWN — завершить FAILED / NO_BRANCH_MATCH.
+При terminal node вернуть outcome и завершить COMPLETED.
+На каждом шаге добавить структурированный TraceStep.
+RE-080 [MUST] Engine MUST иметь max_steps guard. Превышение лимита приводит к STEP_LIMIT_EXCEEDED независимо от предварительной проверки DAG.
+RE-081 [MUST] Evaluation MUST использовать immutable snapshot фактов. Изменение данных пациента требует нового evaluation.
+11. DecisionTrace
+RE-090 [MUST] DecisionTrace MUST быть first-class результатом вычисления и MUST позволять восстановить путь от root до outcome.
+RE-091 [MUST] Для каждого шага trace MUST содержать sequence, node_id, node_type, результаты проверки edges, selected_edge_id и next_node_id.
+RE-092 [MUST] Для score node trace MUST хранить score_group_id, total и SHOULD хранить компоненты/веса.
+RE-093 [MUST] Trace MUST содержать только структурированные значения и идентификаторы; человекочитаемое объяснение SHOULD строиться отдельным Explanation Renderer.
+{  "sequence": 1,  "node_id": "CB-N001",  "node_type": "BOOLEAN_DECISION",  "status": "EVALUATED",  "inputs": {    "SPUTUM_PURULENCE_INCREASE": true  },  "edge_evaluations": [    {      "edge_id": "CB-E001",      "result": "TRUE",      "selected": true    },    {      "edge_id": "CB-E002",      "result": "FALSE",      "selected": false    }  ],  "selected_edge_id": "CB-E001",  "next_node_id": "CB-N002",  "score_details": null}
+12. Ошибки и статусы выполнения
+status
+Смысл
+COMPLETED
+Достигнут terminal node и сформирован outcome.
+NEEDS_INPUT
+Вычисление корректно остановлено из-за отсутствующего обязательного факта.
+FAILED
+Контракт, пакет или граф не позволяют получить корректный детерминированный результат.
+
+error_code
+Когда используется
+INVALID_CASE
+Структура входного case невалидна.
+UNKNOWN_FACT_CODE
+Передан fact_code, неизвестный RulePackage.
+FACT_TYPE_MISMATCH
+Значение не соответствует data_type/unit.
+MISSING_REQUIRED_FACT
+Обязательный факт отсутствует/не оценен.
+MISSING_REFERENCE
+RulePackage содержит битую ссылку.
+NO_BRANCH_MATCH
+При известных входах ни одна ветвь не истинна.
+AMBIGUOUS_BRANCH
+Более одной ветви TRUE.
+STEP_LIMIT_EXCEEDED
+Защитный лимит числа переходов превышен.
+RULESET_NOT_PUBLISHED
+Попытка production-evaluation непубликованного пакета.
+RULESET_HASH_MISMATCH
+Запрошенный hash не соответствует загруженному пакету.
+INTERNAL_ERROR
+Неожиданная техническая ошибка исполнения.
+
+13. Валидация пакета правил
+JSON Schema validation является только первым уровнем. Перед статусом VALIDATED/PUBLISHED обязателен semantic validator.
+VAL-001 [MUST] Уникальность всех node_id, edge_id, scheme_id, fact_code, score_group_id.
+VAL-002 [MUST] Все ссылки from/to node существуют и принадлежат ожидаемой нозологии.
+VAL-003 [MUST] Каждая нозология имеет один root; root существует.
+VAL-004 [MUST] Граф ацикличен.
+VAL-005 [MUST] Все nodes достижимы.
+VAL-006 [MUST] Terminal nodes не имеют исходящих edges.
+VAL-007 [MUST] Все input_ref/output_ref существуют и совместимы по типу.
+VAL-008 [MUST] Каждый edge AST type-checks относительно FactDefinition/ScoreGroup.
+VAL-009 [MUST] Для числовых диапазонов выявляются gaps/overlaps, где ветви должны быть исчерпывающими.
+VAL-010 [MUST] Для известных входов decision node не должен иметь более одного TRUE edge.
+VAL-011 [MUST] Все schemes с outcome TREATMENT_SCHEME разрешаются в Scheme Resolver либо имеют terminal override.
+VAL-012 [MUST] PUBLISHED package содержит version/hash/provenance и не содержит MOCK_EXAMPLE rules как enabled runtime content.
+14. Публикация и жизненный цикл
+DRAFT  →  IN_REVIEW  →  VALIDATED  →  PUBLISHED  →  RETIRED
+RE-100 [MUST] Только PUBLISHED RulePackage MUST исполняться production evaluator.
+RE-101 [MUST] Публикация MUST быть атомарной на уровне согласованного набора component versions.
+RE-102 [MUST] Редактор MUST создавать новую DRAFT-версию; изменение PUBLISHED content in-place запрещено.
+RE-103 [MUST] RETIRED ruleset MUST оставаться доступным для воспроизведения исторических evaluations, если это допускается политикой хранения проекта.
+15. Контракты интеграции с последующими стадиями
+15.1. Scheme Resolver
+RE-110 [MUST] Scheme Resolver принимает scheme_id и возвращает массив TreatmentOption. Свободная строка с «или» SHOULD быть нормализована в отдельные options.
+{  "scheme_id": "CB_S1_R1",  "options": [    {      "treatment_option_id": "CB_S1_R1_FIRST_1",      "line_type": "FIRST_LINE",      "option_group": 1,      "drug_id": 1    },    {      "treatment_option_id": "CB_S1_R1_ALT1_1",      "line_type": "ALTERNATIVE_1",      "option_group": 2,      "drug_id": 11    },    {      "treatment_option_id": "CB_S1_R1_ALT1_2",      "line_type": "ALTERNATIVE_1",      "option_group": 2,      "drug_id": 12    }  ]}
+15.2. Safety Engine
+RE-111 [MUST] Safety Engine SHOULD агрегировать действия по приоритету BLOCK > REVIEW_REQUIRED > WARN > ALLOW и сохранять все сработавшие причины.
+RE-112 [MUST] Исключенный препарат MUST сохраняться в pipeline trace со status=EXCLUDED и rule_id причин.
+15.3. Dose Engine
+RE-113 [MUST] Dose Engine MUST получать drug_id + base regimen + PatientCase/DerivedFacts. Он не должен менять клиническую схему.
+RE-114 [MUST] При отсутствии данных коррекции дозы для v0.1.0 применяется USE_BASE_REGIMEN; отсутствие данных MUST быть отражено в dose trace.
+16. Форматы запросов и результатов
+Полные JSON Schema поставляются отдельными файлами. Ниже минимальная форма запроса:
+{  "contract_version": "0.1.0",  "request_id": "REQ-DEMO-CB-001",  "ruleset_version": "0.1.0",  "case_snapshot": {    "contract_version": "0.1.0",    "case_id": "CASE-DEMO-CB-001",    "patient_ref": null,    "captured_at": "2026-09-26T08:30:00+02:00",    "nosology_code": "CHRON_BRONCHITIS",    "facts": {      "SPUTUM_PURULENCE_INCREASE": {        "state": "KNOWN",        "value": true,        "unit": null,        "observed_at": null,        "source": "MANUAL"      },      "DYSPNEA_WORSENING": {        "state": "KNOWN",        "value": true,        "unit": null,        "observed_at": null,        "source": "MANUAL"      },      "SPUTUM_VOLUME_INCREASE": {        "state": "KNOWN",        "value": false,        "unit": null,        "observed_at": null,        "source": "MANUAL"      },      "AGE_YEARS": {        "state": "KNOWN",        "value": 40,        "unit": "years",        "observed_at": null,        "source": "MANUAL"      },      "DIABETES": {        "state": "KNOWN",        "value": false,        "unit": null,        "observed_at": null,        "source": "MANUAL"      },      "HEART_FAILURE": {        "state": "KNOWN",        "value": false,        "unit": null,        "observed_at": null,        "source": "MANUAL"      },      "CHRONIC_LIVER_OR_CKD_SOURCE": {        "state": "KNOWN",        "value": false,        "unit": null,        "observed_at": null,        "source": "MANUAL"      },      "MALIGNANCY": {        "state": "KNOWN",        "value": false,        "unit": null,        "observed_at": null,        "source": "MANUAL"      },      "HB_EXAC_HOSP_12M": {        "state": "KNOWN",        "value": false,        "unit": null,        "observed_at": null,        "source": "MANUAL"      },      "BETA_LACTAM_INTOLERANCE": {        "state": "KNOWN",        "value": false,        "unit": null,        "observed_at": null,        "source": "MANUAL"      },      "QT_PROLONGATION": {        "state": "KNOWN",        "value": false,        "unit": null,        "observed_at": null,        "source": "MANUAL"      },      "PREGNANCY_OR_LACTATION": {        "state": "KNOWN",        "value": false,        "unit": null,        "observed_at": null,        "source": "MANUAL"      },      "EPILEPSY": {        "state": "KNOWN",        "value": false,        "unit": null,        "observed_at": null,        "source": "MANUAL"      },      "MYASTHENIA": {        "state": "KNOWN",        "value": false,        "unit": null,        "observed_at": null,        "source": "MANUAL"      },      "ALT_AST_GT5_ULN": {        "state": "KNOWN",        "value": false,        "unit": null,        "observed_at": null,        "source": "MANUAL"      },      "CHILD_PUGH_C": {        "state": "KNOWN",        "value": false,        "unit": null,        "observed_at": null,        "source": "MANUAL"      },      "SOY_PEANUT_HYPERSENSITIVITY": {        "state": "KNOWN",        "value": false,        "unit": null,        "observed_at": null,        "source": "MANUAL"      }    },    "concomitant_drug_ids": [],    "metadata": {      "demo": true    }  },  "options": {    "include_trace": true,    "strict_mode": true,    "max_steps": 100  }}
+Результат core evaluator:
+{  "contract_version": "0.1.0",  "evaluation_id": "EVAL-DEMO-CB-001",  "request_id": "REQ-DEMO-CB-001",  "ruleset_version": "0.1.0",  "status": "COMPLETED",  "outcome": {    "type": "TREATMENT_SCHEME",    "scheme_id": "CB_S1_R1"  },  "missing_facts": [],  "errors": []}
+RE-120 [MUST] API/application layer MAY дополнять request/result техническими envelope-полями, но MUST NOT менять нормативную семантику core objects.
+17. Тестирование и критерии приемки
+RE-130 [MUST] Каждый опубликованный ruleset MUST иметь automated structural validation.
+RE-131 [MUST] Каждая нозология MUST иметь golden clinical cases, согласованные медицинскими экспертами. Golden case фиксирует input snapshot, expected outcome и критические trace steps.
+RE-132 [MUST] Для boolean-heavy деревьев SHOULD выполняться exhaustive/комбинаторное тестирование достижимых сочетаний, когда пространство состояний приемлемо.
+RE-133 [MUST] Для числовых порогов MUST автоматически генерироваться boundary tests вокруг каждой границы: x-ε, x, x+ε или соседние целые значения.
+RE-134 [MUST] Regression test MUST запускаться при любом изменении RulePackage, importer/compiler или Rule Engine.
+Минимальный acceptance gate v0.1.0:
+0 schema errors.
+0 missing references.
+0 cycles.
+0 unreachable nodes.
+0 terminal nodes with outgoing edges.
+0 ambiguous branches на golden/boundary suites.
+Все шесть root graphs достигают terminal outcome на утвержденных golden cases.
+18. Безопасность и воспроизводимость
+RE-140 [MUST] Runtime MUST NOT использовать eval/exec для display_expression или любых данных RulePackage.
+RE-141 [MUST] Importer/compiler MUST отвергать неизвестные операторы AST и несовместимые типы operands.
+RE-142 [MUST] Evaluation SHOULD сохранять engine_version, ruleset_version, ruleset_hash и временные метки.
+RE-143 [MUST] RulePackage и DecisionTrace SHOULD логироваться без свободного включения идентифицирующих данных пациента; patient_ref должен быть отдельной контролируемой ссылкой.
+RE-144 [MUST] Клиническое объяснение врачу MUST формироваться из фактически выбранных edges и сработавших safety/dose rules; генеративная модель не должна изменять outcome Rule Engine.
+Приложение A. Коды v0.1.0
+A.1. Terminal codes
+ABT_NOT_INDICATED
+NO_APPLICABLE_DRUG
+NOT_COVERED_BY_GUIDELINE
+ESCALATE_HOSPITALIZATION
+A.2. Node types
+BOOLEAN_DECISION
+SCORE_DECISION
+RANGE_DECISION
+ENUM_DECISION
+COMPOSITE_DECISION
+TERMINAL_SCHEME
+TERMINAL_STATE
+A.3. Fact states
+KNOWN
+UNKNOWN
+NOT_ASSESSED
+A.4. AST operators
+EQ, NEQ, GT, GTE, LT, LTE, IN, NOT_IN, BETWEEN, AND, OR, NOT, IS_KNOWN, IS_UNKNOWN
+Приложение B. Машиночитаемые схемы и примеры
+В комплект поставки входят следующие файлы:
+rule-package.schema.json
+patient-case.schema.json
+evaluation-request.schema.json
+evaluation-result.schema.json
+evaluation-request.example.json
+evaluation-result.example.json
+ast-examples.json
+Все JSON Schema соответствуют Draft 2020-12 и прошли структурную проверку jsonschema. Примеры evaluation request/result также провалидированы против соответствующих схем.
+Приложение C. Миграция текущего ruleset v0.1.0
+Текущий проектный clinical_rules_v0.1.0.json содержит nodes/edges, score groups, scheme map и provenance, однако branch_expression представлен человекочитаемой строкой. Для соответствия данному runtime contract требуется compile step.
+MIG-001 [MUST] branch_expression string MUST быть разобран importer/compiler в AST condition. Исходная строка MAY быть сохранена как display_expression.
+MIG-002 [MUST] Компилятор MUST отказаться от публикации при неоднозначном/неразбираемом выражении, а не пытаться выполнить его динамически.
+MIG-003 [MUST] Существующие resolution_status и source slide MUST быть перенесены без потери provenance.
+MIG-004 [MUST] Scheme IDs вида *_S*_R* MUST сохраняться как внутренние стабильные идентификаторы; tree_label/table_label остаются display/provenance.
+MIG-005 [MUST] После компиляции canonical package MUST пройти semantic validator и только затем может получить статус PUBLISHED.
+Конец спецификации
+Контракт v0.1.0 предназначен как базовая граница совместимости между медицинскими правилами и программной реализацией. Изменение нормативной семантики объектов/исполнения требует новой версии контракта; изменение медицинского наполнения при сохранении контракта требует новой версии ruleset.

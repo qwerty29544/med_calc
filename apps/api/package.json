@@ -1,0 +1,11 @@
+{
+  "name": "@med-calc/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@med-calc/contracts": "workspace:*",
+    "@med-calc/clinical": "workspace:*",
+    "@med-calc/db": "workspace:*"
+  }
+}

@@ -1,0 +1,16 @@
+node_modules
+.git
+.data
+.npm-cache
+.pnpm-store
+apps/web/.next
+test-results
+playwright-report
+.env
+.env.*
+!.env.example
+packages/db/generated
+**/*.tsbuildinfo
+docs/screenshots
+backups
+*.dump

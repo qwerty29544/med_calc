@@ -1,0 +1,13 @@
+# Отдельный проект и volume: демонстрационные пользователи не попадают в целевой контур.
+name: med-calc-production
+services:
+  api:
+    environment:
+      NODE_ENV: production
+      DEMO_MODE: 'false'
+      APP_ORIGIN: ${APP_ORIGIN:?Укажите внешний HTTPS адрес}
+      BOOTSTRAP_ADMIN_LOGIN: ${BOOTSTRAP_ADMIN_LOGIN:-admin}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:?Задайте уникальный пароль минимум 16 символов}
+  web:
+    environment:
+      DEMO_MODE: 'false'

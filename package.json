@@ -1,0 +1,62 @@
+{
+  "name": "med-calc",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.8.1",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:api": "tsx watch apps/api/src/server.ts",
+    "dev:web": "next dev apps/web --hostname 127.0.0.1",
+    "build": "tsc --noEmit && next build apps/web",
+    "typecheck": "tsc --noEmit",
+    "lint": "prettier --check apps packages scripts tests *.ts *.json *.yaml .github/workflows/*.yml",
+    "format": "prettier --write apps packages scripts tests *.ts *.json *.yaml .github/workflows/*.yml",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "content:compile": "tsx scripts/compile-content.ts",
+    "start:api": "tsx apps/api/src/server.ts",
+    "start:web": "next start apps/web --hostname 0.0.0.0",
+    "db:generate": "prisma generate --config packages/db/prisma.config.ts",
+    "db:migrate": "prisma migrate deploy --config packages/db/prisma.config.ts"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/rate-limit": "^10.3.0",
+    "@fastify/swagger": "^9.5.1",
+    "@hookform/resolvers": "^5.2.2",
+    "@prisma/adapter-pg": "^7.0.0",
+    "@prisma/client": "^7.0.0",
+    "@tanstack/react-query": "^5.90.0",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "dotenv": "^17.2.2",
+    "exceljs": "^4.4.0",
+    "fastify": "^5.6.0",
+    "lucide-react": "^0.544.0",
+    "next": "16.3.8",
+    "pg": "^8.16.3",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-hook-form": "^7.63.0",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.1",
+    "@types/node": "^24.5.2",
+    "@types/pg": "^8.15.5",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "concurrently": "^9.2.1",
+    "embedded-postgres": "18.4.0-beta.17",
+    "fast-check": "^4.3.0",
+    "prettier": "^3.9.9",
+    "prisma": "^7.0.0",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}

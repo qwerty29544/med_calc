@@ -1,0 +1,126 @@
+{
+  "AGE_GT_65": {
+    "kind": "OP",
+    "operator": "GT",
+    "operands": [
+      {
+        "kind": "REF",
+        "ref_type": "FACT",
+        "ref_id": "AGE_YEARS"
+      },
+      {
+        "kind": "LITERAL",
+        "value": 65,
+        "unit": "years"
+      }
+    ]
+  },
+  "CB_RISK_GE_1": {
+    "kind": "OP",
+    "operator": "GTE",
+    "operands": [
+      {
+        "kind": "REF",
+        "ref_type": "SCORE",
+        "ref_id": "CB_RISK6_SOURCE"
+      },
+      {
+        "kind": "LITERAL",
+        "value": 1
+      }
+    ]
+  },
+  "AB_COMPOSITE_EXAMPLE": {
+    "kind": "OP",
+    "operator": "AND",
+    "operands": [
+      {
+        "kind": "REF",
+        "ref_type": "FACT",
+        "ref_id": "AB_CLINICAL_INTOXICATION"
+      },
+      {
+        "kind": "OP",
+        "operator": "OR",
+        "operands": [
+          {
+            "kind": "OP",
+            "operator": "GT",
+            "operands": [
+              {
+                "kind": "REF",
+                "ref_type": "FACT",
+                "ref_id": "CRP"
+              },
+              {
+                "kind": "LITERAL",
+                "value": 50,
+                "unit": "mg/L"
+              }
+            ]
+          },
+          {
+            "kind": "OP",
+            "operator": "AND",
+            "operands": [
+              {
+                "kind": "OP",
+                "operator": "OR",
+                "operands": [
+                  {
+                    "kind": "OP",
+                    "operator": "GTE",
+                    "operands": [
+                      {
+                        "kind": "REF",
+                        "ref_type": "FACT",
+                        "ref_id": "WBC"
+                      },
+                      {
+                        "kind": "LITERAL",
+                        "value": 12,
+                        "unit": "10^9/L"
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "OP",
+                    "operator": "GTE",
+                    "operands": [
+                      {
+                        "kind": "REF",
+                        "ref_type": "FACT",
+                        "ref_id": "NEUTROPHILS_ABS"
+                      },
+                      {
+                        "kind": "LITERAL",
+                        "value": 5.5,
+                        "unit": "10^9/L"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "OP",
+                "operator": "GTE",
+                "operands": [
+                  {
+                    "kind": "REF",
+                    "ref_type": "FACT",
+                    "ref_id": "BAND_NEUTROPHILS_PCT"
+                  },
+                  {
+                    "kind": "LITERAL",
+                    "value": 10,
+                    "unit": "%"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

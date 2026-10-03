@@ -1,0 +1,832 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:cdss:rule-engine:rule-package:0.1.0",
+  "title": "Clinical Rule Package v0.1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "package_type",
+    "ruleset_version",
+    "status",
+    "component_versions",
+    "nosologies",
+    "fact_definitions",
+    "score_groups",
+    "nodes",
+    "edges",
+    "schemes",
+    "terminal_states",
+    "treatment_options",
+    "provenance"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "0.1.0"
+    },
+    "package_type": {
+      "const": "CLINICAL_RULESET"
+    },
+    "ruleset_version": {
+      "type": "string",
+      "pattern": "^0\\.1\\.\\d+$"
+    },
+    "status": {
+      "enum": [
+        "DRAFT",
+        "IN_REVIEW",
+        "VALIDATED",
+        "PUBLISHED",
+        "RETIRED"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "published_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "ruleset_hash": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "hash_algorithm": {
+      "enum": [
+        "SHA-256"
+      ]
+    },
+    "component_versions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "clinical_rules",
+        "drug_registry",
+        "contraindications",
+        "interactions",
+        "dose_rules"
+      ],
+      "properties": {
+        "clinical_rules": {
+          "type": "string",
+          "minLength": 1
+        },
+        "drug_registry": {
+          "type": "string",
+          "minLength": 1
+        },
+        "contraindications": {
+          "type": "string",
+          "minLength": 1
+        },
+        "interactions": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dose_rules": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "nosologies": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "nosology_code",
+          "name_ru",
+          "root_node_id",
+          "active"
+        ],
+        "properties": {
+          "nosology_code": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "name_ru": {
+            "type": "string",
+            "minLength": 1
+          },
+          "root_node_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "fact_definitions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/FactDefinition"
+      }
+    },
+    "score_groups": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ScoreGroup"
+      }
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/RuleNode"
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/RuleEdge"
+      }
+    },
+    "schemes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Scheme"
+      }
+    },
+    "terminal_states": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/TerminalState"
+      }
+    },
+    "treatment_options": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/TreatmentOption"
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_basis",
+        "normalization_policy"
+      ],
+      "properties": {
+        "source_basis": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/SourceRef"
+          }
+        },
+        "normalization_policy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  },
+  "$defs": {
+    "Expression": {
+      "$anchor": "Expression",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "ref_type",
+            "ref_id"
+          ],
+          "properties": {
+            "kind": {
+              "const": "REF"
+            },
+            "ref_type": {
+              "enum": [
+                "FACT",
+                "SCORE",
+                "DERIVED_FACT"
+              ]
+            },
+            "ref_id": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "value"
+          ],
+          "properties": {
+            "kind": {
+              "const": "LITERAL"
+            },
+            "value": {
+              "type": [
+                "boolean",
+                "number",
+                "integer",
+                "string",
+                "null"
+              ]
+            },
+            "unit": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "operator",
+            "operands"
+          ],
+          "properties": {
+            "kind": {
+              "const": "OP"
+            },
+            "operator": {
+              "enum": [
+                "EQ",
+                "NEQ",
+                "GT",
+                "GTE",
+                "LT",
+                "LTE",
+                "IN",
+                "NOT_IN",
+                "BETWEEN",
+                "AND",
+                "OR",
+                "NOT",
+                "IS_KNOWN",
+                "IS_UNKNOWN"
+              ]
+            },
+            "operands": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 16,
+              "items": {
+                "$ref": "#/$defs/Expression"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "SourceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_type",
+        "document_id"
+      ],
+      "properties": {
+        "source_type": {
+          "enum": [
+            "PRESENTATION",
+            "CLINICAL_GUIDELINE",
+            "EXPERT_DECISION",
+            "MOCK",
+            "OTHER"
+          ]
+        },
+        "document_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "document_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "slide": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "section": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "FactDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fact_code",
+        "label_ru",
+        "data_type",
+        "unknown_allowed",
+        "unknown_policy"
+      ],
+      "properties": {
+        "fact_code": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "label_ru": {
+          "type": "string",
+          "minLength": 1
+        },
+        "data_type": {
+          "enum": [
+            "BOOLEAN",
+            "INTEGER",
+            "DECIMAL",
+            "ENUM",
+            "STRING",
+            "DATE"
+          ]
+        },
+        "unit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "enum_values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "min_value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "max_value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "unknown_allowed": {
+          "type": "boolean"
+        },
+        "unknown_policy": {
+          "enum": [
+            "BLOCK_EVALUATION_IF_REQUIRED",
+            "USE_DEFAULT_EDGE",
+            "TREAT_AS_FALSE",
+            "TREAT_AS_TRUE"
+          ]
+        },
+        "source": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "ScoreItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "item_id",
+        "weight",
+        "condition"
+      ],
+      "properties": {
+        "item_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "weight": {
+          "type": "number"
+        },
+        "condition": {
+          "$ref": "#/$defs/Expression"
+        },
+        "label_ru": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "ScoreGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "score_group_id",
+        "label_ru",
+        "items"
+      ],
+      "properties": {
+        "score_group_id": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "label_ru": {
+          "type": "string",
+          "minLength": 1
+        },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/ScoreItem"
+          }
+        },
+        "source": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "resolution_status": {
+          "enum": [
+            "SOURCE_LITERAL",
+            "RESOLVED_BY_RANK",
+            "RESOLVED_BY_PARENT_CONTEXT_AND_RANK",
+            "FORMALIZED_COMPOSITE_FROM_SOURCE_TEXT",
+            "SOURCE_LAYOUT_INFERRED",
+            "NORMALIZED_SOURCE_TYPO_PENDING_CONFIRMATION",
+            "TECHNICAL_DEFAULT"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "RuleNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node_id",
+        "nosology_code",
+        "node_type",
+        "resolution_status"
+      ],
+      "properties": {
+        "node_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nosology_code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "node_type": {
+          "enum": [
+            "BOOLEAN_DECISION",
+            "SCORE_DECISION",
+            "RANGE_DECISION",
+            "ENUM_DECISION",
+            "COMPOSITE_DECISION",
+            "TERMINAL_SCHEME",
+            "TERMINAL_STATE"
+          ]
+        },
+        "label_ru": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "input_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "output_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "unknown_behavior": {
+          "enum": [
+            "BLOCK_EVALUATION_IF_REQUIRED",
+            "USE_DEFAULT_EDGE",
+            "NOT_APPLICABLE"
+          ]
+        },
+        "resolution_status": {
+          "enum": [
+            "SOURCE_LITERAL",
+            "RESOLVED_BY_RANK",
+            "RESOLVED_BY_PARENT_CONTEXT_AND_RANK",
+            "FORMALIZED_COMPOSITE_FROM_SOURCE_TEXT",
+            "SOURCE_LAYOUT_INFERRED",
+            "NORMALIZED_SOURCE_TYPO_PENDING_CONFIRMATION",
+            "TECHNICAL_DEFAULT"
+          ]
+        },
+        "source": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "display_expression": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "node_type": {
+                "const": "TERMINAL_SCHEME"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "output_ref"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "node_type": {
+                "const": "TERMINAL_STATE"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "output_ref"
+            ]
+          }
+        }
+      ]
+    },
+    "RuleEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "edge_id",
+        "nosology_code",
+        "from_node_id",
+        "to_node_id",
+        "branch_code",
+        "condition",
+        "priority",
+        "resolution_status"
+      ],
+      "properties": {
+        "edge_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nosology_code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "from_node_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "to_node_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "branch_code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "condition": {
+          "$ref": "#/$defs/Expression"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "is_default": {
+          "type": "boolean"
+        },
+        "resolution_status": {
+          "enum": [
+            "SOURCE_LITERAL",
+            "RESOLVED_BY_RANK",
+            "RESOLVED_BY_PARENT_CONTEXT_AND_RANK",
+            "FORMALIZED_COMPOSITE_FROM_SOURCE_TEXT",
+            "SOURCE_LAYOUT_INFERRED",
+            "NORMALIZED_SOURCE_TYPO_PENDING_CONFIRMATION",
+            "TECHNICAL_DEFAULT"
+          ]
+        },
+        "source": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "display_expression": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "Scheme": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scheme_id",
+        "nosology_code",
+        "scheme_root",
+        "resolution_status"
+      ],
+      "properties": {
+        "scheme_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nosology_code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scheme_root": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rank": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "tree_label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "table_label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "resolution_status": {
+          "enum": [
+            "SOURCE_LITERAL",
+            "RESOLVED_BY_RANK",
+            "RESOLVED_BY_PARENT_CONTEXT_AND_RANK",
+            "FORMALIZED_COMPOSITE_FROM_SOURCE_TEXT",
+            "SOURCE_LAYOUT_INFERRED",
+            "NORMALIZED_SOURCE_TYPO_PENDING_CONFIRMATION",
+            "TECHNICAL_DEFAULT"
+          ]
+        },
+        "terminal_state_override": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "TerminalState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "terminal_code",
+        "label_ru"
+      ],
+      "properties": {
+        "terminal_code": {
+          "enum": [
+            "ABT_NOT_INDICATED",
+            "NO_APPLICABLE_DRUG",
+            "NOT_COVERED_BY_GUIDELINE",
+            "ESCALATE_HOSPITALIZATION"
+          ]
+        },
+        "label_ru": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "enum": [
+            "CLINICAL_ENGINE",
+            "PIPELINE"
+          ]
+        }
+      }
+    },
+    "TreatmentOption": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "treatment_option_id",
+        "scheme_id",
+        "line_type",
+        "option_group",
+        "drug_id",
+        "base_regimen_text"
+      ],
+      "properties": {
+        "treatment_option_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scheme_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "line_type": {
+          "enum": [
+            "FIRST_LINE",
+            "ALTERNATIVE_1",
+            "ALTERNATIVE_2",
+            "ALTERNATIVE_3",
+            "OTHER"
+          ]
+        },
+        "option_group": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "drug_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "base_regimen_text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "$ref": "#/$defs/SourceRef"
+        }
+      }
+    }
+  }
+}

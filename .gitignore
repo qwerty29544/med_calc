@@ -1,0 +1,15 @@
+node_modules/
+.next/
+dist/
+.data/
+.npm-cache/
+.pnpm-store/
+.env
+.env.docker
+.env.production
+.env.demo
+backups/
+test-results/
+playwright-report/
+packages/db/generated/
+*.tsbuildinfo
