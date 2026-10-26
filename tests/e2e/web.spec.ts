@@ -1,4 +1,24 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+import { signIn } from './auth';
+
+async function answerNext(page: Page) {
+  const question = page.locator('[data-testid="fact-field"][data-state="NOT_ASSESSED"]').first();
+  await expect(question).toBeVisible();
+  const saved = page.waitForResponse(
+    (r) => /\/api\/v1\/cases\/[^/]+$/.test(new URL(r.url()).pathname) && r.request().method() === 'PATCH',
+  );
+  const no = question.getByRole('button', { name: 'Нет', exact: true });
+  const number = question.getByRole('spinbutton');
+  if (await no.count()) await no.click();
+  else if (await number.count()) {
+    await number.fill(/возраст/i.test(await question.innerText()) ? '35' : '0');
+    await page.keyboard.press('Tab');
+  } else if (await question.getByRole('combobox').count())
+    await question.getByRole('combobox').selectOption({ index: 1 });
+  else throw new Error(`Неожиданный тип вопроса: ${await question.innerText()}`);
+  expect((await saved).status()).toBe(200);
+  await expect(page.getByTestId('case-ready')).toBeVisible();
+}
 
 test('неавторизованный пользователь попадает на вход', async ({ page }) => {
   await page.goto('/app/new');
@@ -7,11 +27,7 @@ test('неавторизованный пользователь попадает
 });
 
 test('врач создаёт случай, сохраняет неизвестный ответ и возвращается к черновику', async ({ page }) => {
-  await page.goto('/login');
-  await page.getByLabel('Логин', { exact: true }).fill('doctor');
-  await page.getByLabel('Пароль', { exact: true }).fill('doctor-demo-2026');
-  await page.getByRole('button', { name: 'Войти', exact: true }).click();
-  await expect(page).toHaveURL(/\/app$/);
+  await signIn(page, 'doctor');
   if (test.info().project.name === 'desktop') {
     await expect(page.locator('.stat-card').first()).toContainText('6');
     await page.evaluate(() => {
@@ -19,7 +35,7 @@ test('врач создаёт случай, сохраняет неизвест�
       window.scrollTo(0, 0);
     });
     await page.screenshot({
-      path: 'docs/screenshots/dashboard-desktop.png',
+      path: '.data/ui-review/dashboard-desktop.png',
       fullPage: true,
       animations: 'disabled',
     });
@@ -31,11 +47,11 @@ test('врач создаёт случай, сохраняет неизвест�
   const caseUrl = page.url();
   await expect(page.getByTestId('question-card')).toBeVisible();
   await page.getByTestId('question-card').getByRole('button', { name: 'Неизвестно', exact: true }).click();
+  await expect(page.getByTestId('case-ready')).toBeVisible();
   await page.reload();
   await expect(
     page.getByTestId('question-card').getByRole('button', { name: 'Неизвестно', exact: true }),
   ).toHaveAttribute('aria-pressed', 'true');
-  await page.getByRole('button', { name: 'Сохранить ответ', exact: true }).click();
   await expect(page.getByText('Ответы сохранены')).toBeVisible();
   await page.reload();
   await expect(page).toHaveURL(caseUrl);
@@ -51,18 +67,18 @@ test('врач создаёт случай, сохраняет неизвест�
     .first()
     .click();
   await expect(page.locator('.medication-tag')).toHaveCount(1);
-  await page.getByRole('button', { name: 'Сохранить ответ', exact: true }).click();
   await expect(page.getByText('Ответы сохранены')).toBeVisible();
   await page.reload();
+  await page.getByRole('button', { name: 'Изменить сопутствующую терапию' }).click();
   await expect(page.locator('.medication-tag')).toHaveCount(1);
   await expect(page.getByRole('button', { name: 'Указать препараты', exact: true })).toHaveAttribute(
     'aria-pressed',
     'true',
   );
   await page.getByRole('button', { name: 'Не принимает', exact: true }).click();
-  await page.getByRole('button', { name: 'Сохранить ответ', exact: true }).click();
   await expect(page.getByText('Ответы сохранены')).toBeVisible();
   await page.reload();
+  await page.getByRole('button', { name: 'Изменить сопутствующую терапию' }).click();
   await expect(page.getByRole('button', { name: 'Не принимает', exact: true })).toHaveAttribute(
     'aria-pressed',
     'true',
@@ -71,11 +87,7 @@ test('врач создаёт случай, сохраняет неизвест�
 });
 
 test('результат остаётся неизменным, доступен в истории и принимает обратную связь', async ({ page }) => {
-  await page.goto('/login');
-  await page.getByLabel('Логин', { exact: true }).fill('doctor');
-  await page.getByLabel('Пароль', { exact: true }).fill('doctor-demo-2026');
-  await page.getByRole('button', { name: 'Войти', exact: true }).click();
-  await expect(page).toHaveURL(/\/app$/);
+  await signIn(page, 'doctor');
   await page.goto('/app/new');
   // Выбираем реальную нозологию из каталога; ответы проходят серверное дерево.
   await page.getByTestId('nosology-card').filter({ hasText: 'Острый бронхит' }).click();
@@ -83,15 +95,7 @@ test('результат остаётся неизменным, доступен
     const saveResult = page.getByRole('button', { name: 'Сохранить результат', exact: true });
     await expect(page.getByTestId('case-ready')).toBeVisible();
     if (await saveResult.isEnabled()) break;
-    const question = page.getByTestId('question-card');
-    await expect(question).toBeVisible();
-    const no = question.getByRole('button', { name: 'Нет', exact: true });
-    if (await no.count()) await no.click();
-    else if (await question.getByRole('spinbutton').count())
-      await question.getByRole('spinbutton').fill('35');
-    else throw new Error('Новый тип вопроса требует осмысленного сценария e2e');
-    await page.getByRole('button', { name: 'Сохранить ответ', exact: true }).click();
-    await expect(page.getByText('Ответы сохранены')).toBeVisible();
+    await answerNext(page);
   }
   await page.getByRole('button', { name: 'Сохранить результат', exact: true }).click();
   await expect(page).toHaveURL(/\/app\/evaluations\//);
@@ -111,7 +115,7 @@ test('результат остаётся неизменным, доступен
   await page.getByRole('link', { name: 'Открыть исходный случай' }).click();
   await page.locator('.answers-list button').filter({ hasText: 'Возраст' }).click();
   await page.getByTestId('question-card').getByRole('spinbutton').fill('40');
-  await page.getByRole('button', { name: 'Сохранить ответ', exact: true }).click();
+  await page.getByRole('button', { name: 'Сохранить изменения', exact: true }).click();
   await expect(page.getByText('Ответы сохранены')).toBeVisible();
   await page.goto(resultUrl);
   await expect(page.locator('.recommendation-text')).toHaveText(originalText);
@@ -138,9 +142,13 @@ test('скорректированный режим отделён от исхо
         questions: [],
         outcome: { type: 'TREATMENT_SCHEME', scheme_id: 'test' },
         title: 'Технический пример',
-        warnings: [],
+        warnings: [
+          'Тестовый препарат: Предупреждение из серверного результата',
+          'Отдельное критическое ограничение',
+          'Демонстрационный расчет: медицинский пакет DRAFT не утвержден для клинического применения.',
+        ],
         explanation: ['Тест отображения'],
-        copy_text: 'Тестовый результат',
+        copy_text: 'Тестовый результат: 2 разf',
         trace: [],
         versions: { clinical_ruleset: 'test' },
         hashes: {},
@@ -183,6 +191,10 @@ test('скорректированный режим отделён от исхо
   await expect(page.getByText('Нагрузочная доза', { exact: true })).toBeVisible();
   await expect(page.getByText('246 тестовых единиц', { exact: true })).toBeVisible();
   await expect(page.getByText('Предупреждение из серверного результата', { exact: true })).toBeVisible();
+  await expect(page.locator('.result-warnings li')).toHaveCount(1);
+  await expect(page.locator('.result-warnings')).toContainText('Отдельное критическое ограничение');
+  await expect(page.locator('.explanation-list')).not.toBeVisible();
+  await expect(page.locator('.recommendation-text')).toHaveText('Тестовый результат: 2 раза');
   await expect(page.getByText('Исходная схема из источника', { exact: true })).not.toBeVisible();
   await page.getByText('Исходная схема из источника · для сравнения', { exact: true }).click();
   await expect(page.getByText('Исходная схема из источника', { exact: true })).toBeVisible();
@@ -191,11 +203,7 @@ test('скорректированный режим отделён от исхо
 test('системный администратор видит пользователей, но не публикацию медицинского контента', async ({
   page,
 }) => {
-  await page.goto('/login');
-  await page.getByLabel('Логин', { exact: true }).fill('admin');
-  await page.getByLabel('Пароль', { exact: true }).fill('admin-demo-2026');
-  await page.getByRole('button', { name: 'Войти', exact: true }).click();
-  await expect(page).toHaveURL(/\/app$/);
+  await signIn(page, 'admin');
   await page.getByRole('link', { name: 'Пользователи', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Пользователи', exact: true })).toBeVisible();
   await expect(page.getByText('doctor', { exact: true })).toBeVisible();
@@ -205,11 +213,7 @@ test('системный администратор видит пользова�
 
 test('каждая из шести нозологий проходит серверный путь и сохраняет текст результата', async ({ page }) => {
   test.setTimeout(120_000);
-  await page.goto('/login');
-  await page.getByLabel('Логин', { exact: true }).fill('doctor');
-  await page.getByLabel('Пароль', { exact: true }).fill('doctor-demo-2026');
-  await page.getByRole('button', { name: 'Войти', exact: true }).click();
-  await expect(page).toHaveURL(/\/app$/);
+  await signIn(page, 'doctor');
   for (const name of [
     'Хронический бронхит',
     'Острый бронхит',
@@ -232,21 +236,12 @@ test('каждая из шести нозологий проходит серв�
           window.scrollTo(0, 0);
         });
         await page.screenshot({
-          path: 'docs/screenshots/case-tablet.png',
+          path: '.data/ui-review/case-tablet.png',
           fullPage: false,
           animations: 'disabled',
         });
       }
-      if (await question.getByRole('button', { name: 'Нет', exact: true }).count())
-        await question.getByRole('button', { name: 'Нет', exact: true }).click();
-      else if (await question.getByRole('spinbutton').count()) {
-        const label = await question.getByRole('heading').innerText();
-        await question.getByRole('spinbutton').fill(/возраст/i.test(label) ? '35' : '0');
-      } else if (await question.getByRole('combobox').count())
-        await question.getByRole('combobox').selectOption({ index: 1 });
-      else throw new Error(`Неожиданный тип вопроса: ${await question.innerText()}`);
-      await page.getByRole('button', { name: 'Сохранить ответ', exact: true }).click();
-      await expect(page.getByText('Ответы сохранены')).toBeVisible();
+      await answerNext(page);
     }
     await expect(finish).toBeEnabled();
     await finish.click();
@@ -262,11 +257,7 @@ test('каждая из шести нозологий проходит серв�
 test('клинический администратор видит отчёт проверки и не публикует неподтверждённый пакет', async ({
   page,
 }) => {
-  await page.goto('/login');
-  await page.getByLabel('Логин', { exact: true }).fill('clinical');
-  await page.getByLabel('Пароль', { exact: true }).fill('clinical-demo-2026');
-  await page.getByRole('button', { name: 'Войти', exact: true }).click();
-  await expect(page).toHaveURL(/\/app$/);
+  await signIn(page, 'clinical');
   await page.getByRole('link', { name: 'Медицинский контент', exact: true }).click();
   await page.getByLabel('Содержимое пакета').fill('{');
   await page.getByRole('button', { name: 'Импортировать JSON', exact: true }).click();
@@ -365,7 +356,6 @@ test('запоздалый preview не заменяет вопрос после
   await page.goto('/app/cases/race-fixture');
   await started;
   await page.getByRole('button', { name: 'Не принимает', exact: true }).click();
-  await page.getByRole('button', { name: 'Сохранить ответ', exact: true }).click();
   await expect(
     page.getByTestId('question-card').getByRole('heading', { name: 'Актуальный вопрос', exact: true }),
   ).toBeVisible();

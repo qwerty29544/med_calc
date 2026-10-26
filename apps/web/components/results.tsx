@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   ArrowLeft,
@@ -24,7 +24,7 @@ import {
 import type { EvaluationView, Regimen, TherapyOption } from '../../../packages/contracts/src/index';
 import { api, dateText, errorText, post, type Catalog, type User } from './api';
 import { Badge, Empty, ErrorNotice, Loading, PageTitle, Success } from './ui';
-import { factText } from './case-editor';
+import { clinicalText, factText } from './clinical-text';
 
 const statusLabels: Record<string, string> = {
   COMPLETED: 'Расчёт завершён',
@@ -78,7 +78,7 @@ export function ResultContent({
   const [copyError, setCopyError] = useState('');
   async function copy() {
     try {
-      await navigator.clipboard.writeText(result.copy_text);
+      await navigator.clipboard.writeText(clinicalText(result.copy_text));
       setCopied(true);
       setCopyError('');
     } catch {
@@ -89,6 +89,20 @@ export function ResultContent({
   }
   const completeSafety = ['COMPLETE', 'COMPLETED', 'NOT_APPLICABLE'].includes(result.safety_status);
   const technicalRole = user.role !== 'DOCTOR';
+  const shownFindings = new Set(
+    result.options.flatMap((option) =>
+      option.findings.map((finding) => `${option.drug_name}: ${finding.message}`),
+    ),
+  );
+  const warnings = [...new Set(result.warnings)].filter(
+    (warning) =>
+      !shownFindings.has(warning) &&
+      !(
+        result.demo &&
+        warning ===
+          'Демонстрационный расчет: медицинский пакет DRAFT не утвержден для клинического применения.'
+      ),
+  );
   return (
     <div className="result-content">
       <section className={`result-summary ${result.status === 'FAILED' ? 'failed' : ''}`}>
@@ -100,7 +114,7 @@ export function ResultContent({
             <div className="eyebrow">
               {compact ? 'ПРЕДВАРИТЕЛЬНЫЙ РЕЗУЛЬТАТ' : 'ИТОГ КЛИНИЧЕСКОГО РАСЧЁТА'}
             </div>
-            <h2>{result.title}</h2>
+            <h2>{clinicalText(result.title)}</h2>
           </div>
           <Badge tone={result.status === 'COMPLETED' ? 'success' : 'warning'}>
             {statusLabels[result.status] || result.status}
@@ -118,14 +132,14 @@ export function ResultContent({
           {!completeSafety && <span>Не означает отсутствие противопоказаний и взаимодействий.</span>}
         </div>
       </section>
-      {result.warnings.length > 0 && (
+      {warnings.length > 0 && (
         <section className="notice warning result-warnings">
           <ShieldAlert size={21} />
           <div>
             <h3>На что обратить внимание</h3>
             <ul>
-              {result.warnings.map((warning, i) => (
-                <li key={i}>{warning}</li>
+              {warnings.map((warning, i) => (
+                <li key={i}>{clinicalText(warning)}</li>
               ))}
             </ul>
           </div>
@@ -147,8 +161,8 @@ export function ResultContent({
           </div>
         </section>
       )}
-      <section className="panel explanation-panel">
-        <div className="section-title-icon">
+      <details className="panel details-panel explanation-panel">
+        <summary className="section-title-icon">
           <span>
             <ListIcon />
           </span>
@@ -156,20 +170,21 @@ export function ResultContent({
             <h2>Почему получен этот результат</h2>
             <p>Объяснение на основе введённых данных и правил</p>
           </div>
-        </div>
+          <ChevronRight size={17} />
+        </summary>
         {result.explanation.length ? (
           <ol className="explanation-list">
             {result.explanation.map((step, index) => (
               <li key={index}>
                 <span>{index + 1}</span>
-                <p>{step}</p>
+                <p>{clinicalText(step)}</p>
               </li>
             ))}
           </ol>
         ) : (
           <p className="muted">Сервер не предоставил текстовое объяснение.</p>
         )}
-      </section>
+      </details>
       {!compact && (
         <>
           <section className="panel copy-panel">
@@ -185,7 +200,7 @@ export function ResultContent({
             </div>
             {copyError && <ErrorNotice message={copyError} />}
             <pre className="recommendation-text" tabIndex={0}>
-              {result.copy_text}
+              {clinicalText(result.copy_text)}
             </pre>
           </section>
           <details className="panel details-panel">
@@ -281,7 +296,9 @@ function TherapyCard({ option }: { option: TherapyOption }) {
           {blocked ? 'Исключён' : eligibilityLabels[option.eligibility] || option.eligibility}
         </Badge>
       </div>
-      {option.dose_status !== 'ADJUSTED' && <p className="regimen-source">{option.source_text}</p>}
+      {option.dose_status !== 'ADJUSTED' && (
+        <p className="regimen-source">{clinicalText(option.source_text)}</p>
+      )}
       {option.dose_status === 'ADJUSTED' && (
         <p className="regimen-caption">Итоговый скорректированный режим</p>
       )}
@@ -293,7 +310,7 @@ function TherapyCard({ option }: { option: TherapyOption }) {
       {option.dose_status === 'ADJUSTED' && (
         <details className="source-regimen">
           <summary>Исходная схема из источника · для сравнения</summary>
-          <p className="regimen-source">{option.source_text}</p>
+          <p className="regimen-source">{clinicalText(option.source_text)}</p>
         </details>
       )}
       {option.findings.length > 0 && (
@@ -427,7 +444,9 @@ export function SavedResult({ id, catalog, user }: { id: string; catalog?: Catal
                 <dl className="snapshot-list">
                   {Object.entries(snapshot.facts).map(([code, value]) => (
                     <div key={code}>
-                      <dt>{catalog?.facts.find((f) => f.fact_code === code)?.label_ru || code}</dt>
+                      <dt>
+                        {clinicalText(catalog?.facts.find((f) => f.fact_code === code)?.label_ru || code)}
+                      </dt>
                       <dd>{factText(value)}</dd>
                     </div>
                   ))}
@@ -463,20 +482,39 @@ export function SavedResult({ id, catalog, user }: { id: string; catalog?: Catal
     </>
   );
 }
-function Feedback({ id }: { id: string }) {
+export type FeedbackInput = {
+  request_id: string;
+  agreement: 'AGREE' | 'DISAGREE';
+  used: boolean;
+  comment: string;
+};
+export function Feedback({
+  id,
+  onSubmit,
+  disabled = false,
+}: {
+  id?: string;
+  onSubmit?: (input: FeedbackInput) => Promise<void>;
+  disabled?: boolean;
+}) {
   const [agreement, setAgreement] = useState<'AGREE' | 'DISAGREE' | null>(null);
   const [used, setUsed] = useState(false);
   const [comment, setComment] = useState('');
   const [busy, setBusy] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const request = useRef<{ key: string; id: string } | null>(null);
   async function send(e: React.FormEvent) {
     e.preventDefault();
-    if (!agreement) return;
+    if (!agreement || busy || disabled) return;
     setBusy(true);
     setError('');
     try {
-      await post(`/evaluations/${id}/feedback`, { agreement, used, comment });
+      const body = { agreement, used, comment };
+      const key = JSON.stringify(body);
+      if (request.current?.key !== key) request.current = { key, id: crypto.randomUUID() };
+      if (onSubmit) await onSubmit({ ...body, request_id: request.current.id });
+      else await post(`/evaluations/${id}/feedback`, body);
       setSuccess(true);
     } catch (e) {
       setError(errorText(e));
@@ -490,13 +528,17 @@ function Feedback({ id }: { id: string }) {
         <MessageSquare size={23} />
       </span>
       <h2>Обратная связь</h2>
-      <p>Ваше мнение помогает медицинской команде оценивать работу системы.</p>
+      <p>
+        {onSubmit
+          ? 'При отправке отзыва этот результат сохранится автоматически.'
+          : 'Ваше мнение помогает медицинской команде оценивать работу системы.'}
+      </p>
       {success ? (
         <Success>Обратная связь сохранена</Success>
       ) : (
         <form className="stack" onSubmit={send}>
           {error && <ErrorNotice message={error} />}
-          <fieldset disabled={busy}>
+          <fieldset disabled={busy || disabled}>
             <legend>Согласны с результатом?</legend>
             <div className="feedback-options">
               <button
@@ -534,7 +576,7 @@ function Feedback({ id }: { id: string }) {
               />
             </div>
           </fieldset>
-          <button className="button primary full" disabled={busy || !agreement}>
+          <button className="button primary full" disabled={busy || disabled || !agreement}>
             {busy ? 'Отправляем…' : 'Отправить обратную связь'}
           </button>
         </form>

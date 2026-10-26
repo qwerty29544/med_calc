@@ -1,7 +1,7 @@
 import swagger, { type StaticDocumentSpec } from '@fastify/swagger';
 import { z } from 'zod';
 import type { FastifyInstance } from 'fastify';
-import { draftPatch, goldenSchema } from './validation';
+import { draftPatch, evaluationInput, goldenSchema } from './validation';
 import { roles } from './security';
 /** Только статические доверенные схемы HTTP. Клинический контент в OpenAPI не попадает. */
 export async function registerOpenApi(app: FastifyInstance) {
@@ -19,7 +19,12 @@ export async function registerOpenApi(app: FastifyInstance) {
           }
         : {}),
       ...(input
-        ? { requestBody: { required: true, content: { 'application/json': { schema: schema(input) } } } }
+        ? {
+            requestBody: {
+              required: input !== evaluationInput,
+              content: { 'application/json': { schema: schema(input) } },
+            },
+          }
         : {}),
       responses: {
         '200': { description: 'Успешный ответ' },
@@ -48,7 +53,10 @@ export async function registerOpenApi(app: FastifyInstance) {
     route(
       'post',
       `/cases/{id}/${path}`,
-      path === 'evaluations' ? 'Сохранить неизменный расчет' : 'Предварительный расчет',
+      path === 'evaluations'
+        ? 'Сохранить неизменный расчет; необязательный отзыв к preview'
+        : 'Предварительный расчет',
+      path === 'evaluations' ? evaluationInput : undefined,
     );
   route('get', '/evaluations', 'История');
   for (const section of ['', '/trace', '/explanation'])

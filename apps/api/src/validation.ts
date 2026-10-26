@@ -120,3 +120,20 @@ export function snapshot(draft: CaseDraft): CaseDraft {
     updated_at: draft.updated_at,
   };
 }
+
+export const evaluationInput = z
+  .strictObject({
+    preview_token: z
+      .string()
+      .regex(/^[a-f0-9]{64}$/)
+      .optional(),
+    feedback: z
+      .strictObject({
+        request_id: z.string().uuid(),
+        agreement: z.enum(['AGREE', 'DISAGREE']),
+        used: z.boolean(),
+        comment: z.string().max(2000),
+      })
+      .optional(),
+  })
+  .refine((input) => !input.feedback || !!input.preview_token, 'Для отзыва нужен предварительный результат');

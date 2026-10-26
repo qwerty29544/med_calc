@@ -32,7 +32,15 @@ import {
   seedUsers,
   verifyPassword,
 } from './security';
-import { ApiError, draftPatch, fail, goldenSchema, snapshot, validateFacts } from './validation';
+import {
+  ApiError,
+  draftPatch,
+  evaluationInput,
+  fail,
+  goldenSchema,
+  snapshot,
+  validateFacts,
+} from './validation';
 import {
   isClinical,
   normalizePackage,
@@ -414,15 +422,41 @@ export async function createApp(options: AppOptions): Promise<FastifyInstance> {
     app.post(`/api/v1/cases/:id/${final ? 'evaluations' : 'evaluate-preview'}`, async (req, reply) => {
       const u = requireRole(req, medicalRoles);
       const caseId = paramsId(req);
-      emptyBody(req);
+      const input = final ? evaluationInput.parse(req.body ?? {}) : evaluationInput.parse(emptyBody(req));
       const result = await store.transaction((s) => {
         const draft = caseFor(s, u, caseId, true);
+        if (input.feedback) {
+          const previous = s.evaluations.find((e) => e.id === input.feedback!.request_id);
+          if (previous) {
+            const feedback = s.feedback.find((f) => f.evaluation_id === previous.id && f.user_id === u.id);
+            if (previous.case_id !== caseId || previous.created_by !== u.id)
+              fail(409, 'FEEDBACK_REQUEST_CONFLICT', 'Этот запрос уже использован для другого результата');
+            if (
+              previous.view.preview_token !== input.preview_token ||
+              !feedback ||
+              feedback.agreement !== input.feedback.agreement ||
+              feedback.used !== input.feedback.used ||
+              feedback.comment !== input.feedback.comment
+            )
+              fail(
+                409,
+                'FEEDBACK_REQUEST_CONFLICT',
+                'Содержимое повторного отзыва отличается от сохранённого',
+              );
+            return previous.view;
+          }
+        }
         const content = activeContent(base, s, demo);
         validateFacts(content, draft.facts, draft.medications);
         const view = preview(content, snapshot(draft));
         view.demo = demo;
+        view.preview_token = digest(canonicalJson({ revision: draft.revision, view }));
         if (!final) return view;
-        const evaluationId = id();
+        if (input.preview_token && input.preview_token !== view.preview_token)
+          fail(409, 'PREVIEW_CHANGED', 'Данные или правила изменились. Обновите результат перед оценкой.');
+        if (input.feedback && view.status !== 'COMPLETED')
+          fail(409, 'RESULT_NOT_COMPLETE', 'Оценка доступна после завершения расчёта');
+        const evaluationId = input.feedback?.request_id ?? id();
         view.id = evaluationId;
         view.created_at = now();
         view.snapshot = snapshot(draft);
@@ -439,6 +473,18 @@ export async function createApp(options: AppOptions): Promise<FastifyInstance> {
           case_revision: draft.revision,
           status: view.status,
         });
+        if (input.feedback) {
+          const { request_id: _requestId, ...feedback } = input.feedback;
+          const record = {
+            id: id(),
+            evaluation_id: evaluationId,
+            user_id: u.id,
+            ...feedback,
+            created_at: now(),
+          };
+          s.feedback.push(record);
+          audit(s, 'FEEDBACK_CREATED', u.id, record.id);
+        }
         return view;
       });
       return reply.code(final ? 201 : 200).send(result);

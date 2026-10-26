@@ -33,6 +33,14 @@ const content: ClinicalContent = {
     nosologies: [{ nosology_code: 'TEST', name_ru: 'Тест', root_node_id: 'ROOT', active: true }],
     fact_definitions: [
       {
+        fact_code: 'AGE_YEARS',
+        label_ru: 'Возраст пациента',
+        data_type: 'INTEGER',
+        unit: 'years',
+        unknown_allowed: true,
+        unknown_policy: 'ASK',
+      },
+      {
         fact_code: 'fever',
         label_ru: 'Температура',
         data_type: 'BOOLEAN',
@@ -106,7 +114,90 @@ async function create(cookie: string) {
   expect(r.statusCode).toBe(201);
   return r.json().id as string;
 }
+async function createReady(cookie: string) {
+  const caseId = await create(cookie);
+  expect(
+    (
+      await send(cookie, 'PATCH', `/cases/${caseId}`, {
+        facts: { AGE_YEARS: { state: 'KNOWN', value: 35, unit: 'years' } },
+      })
+    ).statusCode,
+  ).toBe(200);
+  return caseId;
+}
 describe('HTTP API: безопасность, история и жизненный цикл', () => {
+  it('сохраняет отзыв из preview вместе с точным снимком и не дублирует повтор запроса', async () => {
+    const cookie = await login();
+    const caseId = await createReady(cookie);
+    const displayed = (await send(cookie, 'POST', `/cases/${caseId}/evaluate-preview`)).json();
+    const requestId = randomUUID();
+    const payload = {
+      preview_token: displayed.preview_token ?? '0'.repeat(64),
+      feedback: { request_id: requestId, agreement: 'DISAGREE', used: false, comment: 'Проверка результата' },
+    };
+    const saved = await send(cookie, 'POST', `/cases/${caseId}/evaluations`, payload);
+    expect(saved.statusCode, saved.body).toBe(201);
+    expect(saved.json().copy_text).toBe(displayed.copy_text);
+    expect(saved.json().preview_token).toBe(displayed.preview_token);
+    const repeated = await send(cookie, 'POST', `/cases/${caseId}/evaluations`, payload);
+    expect(repeated.statusCode).toBe(201);
+    expect(repeated.json().id).toBe(saved.json().id);
+    const state = await store.read();
+    expect(state.evaluations.filter((e) => e.case_id === caseId)).toHaveLength(1);
+    expect(state.feedback.filter((f) => f.evaluation_id === saved.json().id)).toEqual([
+      expect.objectContaining({ agreement: 'DISAGREE', comment: 'Проверка результата', used: false }),
+    ]);
+  });
+  it('не сохраняет отзыв к preview после изменения случая', async () => {
+    const cookie = await login();
+    const caseId = await createReady(cookie);
+    const displayed = (await send(cookie, 'POST', `/cases/${caseId}/evaluate-preview`)).json();
+    await send(cookie, 'PATCH', `/cases/${caseId}`, { facts: { fever: { state: 'KNOWN', value: true } } });
+    const rejected = await send(cookie, 'POST', `/cases/${caseId}/evaluations`, {
+      preview_token: displayed.preview_token ?? '0'.repeat(64),
+      feedback: { request_id: randomUUID(), agreement: 'AGREE', used: false, comment: '' },
+    });
+    expect(rejected.statusCode).toBe(409);
+    expect(rejected.json().code).toBe('PREVIEW_CHANGED');
+    const state = await store.read();
+    expect(state.evaluations).toHaveLength(0);
+    expect(state.feedback).toHaveLength(0);
+  });
+  it('не переиспользует ключ отзыва с другим содержанием или от другого врача', async () => {
+    const cookie = await login();
+    const caseId = await createReady(cookie);
+    const displayed = (await send(cookie, 'POST', `/cases/${caseId}/evaluate-preview`)).json();
+    const payload = {
+      preview_token: displayed.preview_token ?? '0'.repeat(64),
+      feedback: { request_id: randomUUID(), agreement: 'AGREE', used: false, comment: 'Первый отзыв' },
+    };
+    expect((await send(cookie, 'POST', `/cases/${caseId}/evaluations`, payload)).statusCode).toBe(201);
+    const conflict = await send(cookie, 'POST', `/cases/${caseId}/evaluations`, {
+      ...payload,
+      feedback: { ...payload.feedback, agreement: 'DISAGREE' },
+    });
+    expect(conflict.statusCode).toBe(409);
+    const other = await login('pharmacist');
+    expect((await send(other, 'POST', `/cases/${caseId}/evaluations`, payload)).statusCode).toBe(404);
+    expect((await store.read()).feedback).toHaveLength(1);
+  });
+  it('отклоняет отзыв без токена и отзыв к незавершённому расчёту без частичной записи', async () => {
+    const cookie = await login();
+    const caseId = await create(cookie);
+    const feedback = { request_id: randomUUID(), agreement: 'AGREE', used: false, comment: '' };
+    expect((await send(cookie, 'POST', `/cases/${caseId}/evaluations`, { feedback })).statusCode).toBe(400);
+    const displayed = (await send(cookie, 'POST', `/cases/${caseId}/evaluate-preview`)).json();
+    expect(displayed.status).toBe('NEEDS_INPUT');
+    const rejected = await send(cookie, 'POST', `/cases/${caseId}/evaluations`, {
+      feedback,
+      preview_token: displayed.preview_token,
+    });
+    expect(rejected.statusCode).toBe(409);
+    expect(rejected.json().code).toBe('RESULT_NOT_COMPLETE');
+    const state = await store.read();
+    expect(state.evaluations).toHaveLength(0);
+    expect(state.feedback).toHaveLength(0);
+  });
   it('принимает полностью структурированный компонентный режим без суммирования веществ', () => {
     const result = validateMedicalPackage(
       {

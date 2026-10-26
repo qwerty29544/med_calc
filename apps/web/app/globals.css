@@ -3858,3 +3858,67 @@ tbody tr:last-child td {
     visibility: visible;
   }
 }
+/* Clinical data entry: compact groups and persistent save feedback. */
+.case-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.case-navigation [role='status'] {
+  font-size: 13px;
+  text-align: right;
+}
+.grouped-fact + .grouped-fact {
+  border-top: 1px solid var(--border, #e3e9eb);
+  padding-top: 22px;
+  margin-top: 22px;
+}
+.question-card .grouped-fact h2 {
+  font-size: 19px;
+  margin-bottom: 14px;
+}
+.question-help {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: var(--muted, #5c6b73);
+}
+.question-help summary {
+  cursor: pointer;
+}
+.edit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+.medications-summary p {
+  margin-bottom: 0;
+  overflow-wrap: anywhere;
+}
+.medications-panel .panel-heading {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.case-main > .feedback-panel {
+  margin-top: 22px;
+}
+.question-card:focus-visible {
+  outline: 2px solid #087e82;
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .case-navigation {
+    align-items: flex-start;
+  }
+  .question-card .grouped-fact h2 {
+    font-size: 17px;
+  }
+  .edit-actions .button {
+    flex: 1 1 100%;
+  }
+  .case-main .save-bar {
+    flex-wrap: wrap;
+  }
+}

@@ -4,7 +4,7 @@ zone: code
 tags: [индекс]
 status: stable
 created: 2026-10-02
-updated: 2026-10-03
+updated: 2026-10-27
 ---
 
 # Индекс вики
@@ -21,4 +21,8 @@ updated: 2026-10-03
 
 - [[code/medical-nosology-calculator]] — медицинский калькулятор 0.1.0, локальное и серверное demo-окружение Docker, требования HTTPS для production-сессий и результаты технических проверок.
 
+- [[code/medical-feedback-and-interactions]] — разбор замечаний врачей и выполненные исправления интерфейса.
+
 ## Writing
+
+- [[writing/medical-questions]] — шесть вопросов медикам для согласования логики и светофора.

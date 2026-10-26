@@ -181,6 +181,7 @@ export interface TherapyOption {
 }
 export interface EvaluationView {
   id?: string;
+  preview_token?: string;
   case_id: string;
   nosology_code?: string;
   status: CoreResult['status'];
