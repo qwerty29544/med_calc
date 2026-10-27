@@ -10,11 +10,13 @@
 
 ```bash
 git status --short
-git pull --ff-only origin main
+(umask 022; git pull --ff-only origin main)
 docker compose --env-file .env.demo -f compose.yaml -f compose.demo.yaml ps
 ```
 
 Если Git сообщает о конфликте локальных изменений, остановитесь и сохраните их отдельно. Не применяйте `reset --hard` или очистку каталога. Убедитесь, что команда Compose показывает именно существующие сервисы тестового сервера, в том числе PostgreSQL.
+
+Ограничение `umask 077` применяйте только внутри блока резервного копирования. При получении кода используется `022`; кроме того, Dockerfile явно назначает владельцем скопированного кода пользователя `node`, от которого запускается приложение. Это позволяет читать исходники даже после сборки из каталога с правами файлов `600` и каталогов `700`.
 
 Сохраните текущий образ приложения для отката и соберите новый. Работающие контейнеры на этом шаге продолжают обслуживать запросы:
 
@@ -40,14 +42,16 @@ docker compose --env-file .env.demo -f compose.yaml -f compose.demo.yaml ps
 ```bash
 (
   set -eu
-  umask 077
-  mkdir -p backups
   backup="backups/before-ui-$(date +%Y%m%d-%H%M%S).dump"
-  docker compose --env-file .env.demo -f compose.yaml -f compose.demo.yaml exec -T postgres \
-    pg_dump -U medcalc -d medcalc -Fc > "$backup"
-  test -s "$backup"
-  docker compose --env-file .env.demo -f compose.yaml -f compose.demo.yaml exec -T postgres \
-    pg_restore --list < "$backup" > /dev/null
+  (
+    umask 077
+    mkdir -p backups
+    docker compose --env-file .env.demo -f compose.yaml -f compose.demo.yaml exec -T postgres \
+      pg_dump -U medcalc -d medcalc -Fc > "$backup"
+    test -s "$backup"
+    docker compose --env-file .env.demo -f compose.yaml -f compose.demo.yaml exec -T postgres \
+      pg_restore --list < "$backup" > /dev/null
+  )
   printf 'Резервная копия: %s\n' "$backup"
   docker compose --env-file .env.demo -f compose.yaml -f compose.demo.yaml exec -T postgres \
     psql -X -U medcalc -d medcalc -v ON_ERROR_STOP=1 \
@@ -71,6 +75,32 @@ docker compose --env-file .env.demo -f compose.yaml -f compose.demo.yaml ps
 - В новом тестовом случае проверьте выбор нозологии, автосохранение, правку уже введённого поля на той же странице и отправку отзыва непосредственно у результата. Тестовый случай останется в истории.
 - Проверьте настройки оформления и доступность пунктов меню для своей роли; роль через настройки оформления не меняется.
 - После обновления перезагрузите страницу браузера, чтобы загрузился новый интерфейс.
+
+## Если API перезапускается с EACCES при чтении app.ts
+
+В таком случае процесс не может прочитать исходники внутри образа. PostgreSQL из-за этой ошибки не требуется пересоздавать или восстанавливать. После получения исправления выполните следующий блок в прежнем каталоге и с прежним Compose-проектом. Он проверяет чтение кода от непривилегированного пользователя до перезапуска приложения. Проверка запускается без зависимостей, не обращается к БД и не меняет её записи.
+
+```bash
+(
+  set -eu
+  dc() { docker compose --env-file .env.demo -f compose.yaml -f compose.demo.yaml "$@"; }
+  counts() {
+    dc exec -T postgres psql -X -U medcalc -d medcalc -v ON_ERROR_STOP=1 \
+      -c 'SELECT (SELECT count(*) FROM evaluations) AS evaluations, (SELECT count(*) FROM clinician_feedback) AS feedback;'
+  }
+  test -n "$(dc ps -q postgres)"
+  (umask 022; git pull --ff-only origin main)
+  dc build api web
+  dc run --rm --no-deps --entrypoint node api -e \
+    'if(process.getuid()===0)throw Error("Ожидался непривилегированный пользователь"); require("node:fs").readFileSync("/app/apps/api/src/app.ts"); console.log("Исходники доступны, uid="+process.getuid())'
+  counts
+  dc up -d --no-deps --no-build --force-recreate --wait --wait-timeout 180 api web
+  counts
+  dc ps
+)
+```
+
+Сохраните ранее созданные дамп и тег образа для отката. Сравните количество расчётов до и после запуска и откройте прежние результаты в интерфейсе. Если `api` всё ещё не становится `healthy`, используйте `docker compose --env-file .env.demo -f compose.yaml -f compose.demo.yaml logs --tail 100 api`; восстановление базы не является исправлением прав доступа к коду.
 
 ## Откат приложения при проблеме
 

@@ -10,7 +10,7 @@ COPY packages/contracts/package.json packages/contracts/package.json
 COPY packages/db/package.json packages/db/package.json
 COPY packages/therapy/package.json packages/therapy/package.json
 RUN pnpm install --frozen-lockfile
-COPY . .
+COPY --chown=node:node . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ARG API_URL=http://api:3001
 ENV API_URL=${API_URL}
