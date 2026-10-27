@@ -349,7 +349,9 @@ describe('HTTP API: безопасность, история и жизненны
       package_ids: [future.id, registryId],
     });
     expect(activated.statusCode, activated.body).toBe(200);
-    const catalog = (await send(c, 'GET', '/catalog')).json();
+    const catalogResponse = await send(c, 'GET', '/catalog');
+    expect(catalogResponse.statusCode, catalogResponse.body).toBe(200);
+    const catalog = catalogResponse.json();
     expect(catalog.versions.clinical_ruleset).toBe('0.1.1');
     expect(catalog.versions.drug_registry).toBe('0.1.1');
   });

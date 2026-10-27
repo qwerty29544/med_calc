@@ -29,7 +29,7 @@ test('неавторизованный пользователь попадает
 test('врач создаёт случай, сохраняет неизвестный ответ и возвращается к черновику', async ({ page }) => {
   await signIn(page, 'doctor');
   if (test.info().project.name === 'desktop') {
-    await expect(page.locator('.stat-card').first()).toContainText('6');
+    await expect(page.getByTestId('nosology-card')).toHaveCount(6);
     await page.evaluate(() => {
       if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
       window.scrollTo(0, 0);
@@ -43,6 +43,7 @@ test('врач создаёт случай, сохраняет неизвест�
   await page.getByRole('link', { name: 'Новый расчёт', exact: true }).first().click();
   await expect(page.getByTestId('nosology-card')).toHaveCount(6);
   await page.getByTestId('nosology-card').first().click();
+  await page.getByRole('button', { name: 'Заполнить данные', exact: true }).click();
   await expect(page).toHaveURL(/\/app\/cases\//);
   const caseUrl = page.url();
   await expect(page.getByTestId('question-card')).toBeVisible();
@@ -91,6 +92,7 @@ test('результат остаётся неизменным, доступен
   await page.goto('/app/new');
   // Выбираем реальную нозологию из каталога; ответы проходят серверное дерево.
   await page.getByTestId('nosology-card').filter({ hasText: 'Острый бронхит' }).click();
+  await page.getByRole('button', { name: 'Заполнить данные', exact: true }).click();
   for (let index = 0; index < 20; index++) {
     const saveResult = page.getByRole('button', { name: 'Сохранить результат', exact: true });
     await expect(page.getByTestId('case-ready')).toBeVisible();
@@ -224,6 +226,7 @@ test('каждая из шести нозологий проходит серв�
   ]) {
     await page.goto('/app/new');
     await page.getByTestId('nosology-card').filter({ hasText: name }).click();
+    await page.getByRole('button', { name: 'Заполнить данные', exact: true }).click();
     const finish = page.getByRole('button', { name: 'Сохранить результат', exact: true });
     for (let index = 0; index < 35; index++) {
       await expect(page.getByTestId('case-ready')).toBeVisible();
@@ -377,9 +380,7 @@ test('планшетное меню скрыто от клавиатуры и з
     }),
   );
   await page.goto('/app');
-  await expect(
-    page.getByRole('heading', { name: 'Здравствуйте, Тестовый администратор', exact: true }),
-  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Доступ и роли', exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Пользователи', exact: true })).not.toBeVisible();
   await page.getByRole('button', { name: 'Открыть меню', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Закрыть навигацию', exact: true })).toHaveAttribute(

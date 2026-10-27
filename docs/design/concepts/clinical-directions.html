@@ -1,0 +1,294 @@
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=PT+Serif:wght@400;700&display=swap">
+<style>
+#clinical-directions .mc{--mc-bg:light-dark(#f5f8f6,#15231f);--mc-surface:light-dark(#ffffff,#1c2e27);--mc-ink:light-dark(#183b36,#e7f2eb);--mc-muted:light-dark(#526b62,#afc5b9);--mc-line:light-dark(#d5e1da,#40594c);--mc-accent:light-dark(#38675a,#9fceb6);--mc-on-accent:light-dark(#ffffff,#142e20);--mc-tint:light-dark(#e6f0ea,#2a4436);--mc-error:light-dark(#a33730,#ffb7a8);--mc-error-bg:light-dark(#fff0eb,#422a24);--mc-warning:light-dark(#795524,#e6c48e);--mc-warning-bg:light-dark(#faf0dc,#3a3121);--mc-radius:12px;--mc-space:24px;background:var(--mc-bg);color:var(--mc-ink);font:400 16px/1.5 'Golos Text',sans-serif;min-height:1030px;box-sizing:border-box;overflow-wrap:anywhere;border-radius:16px;isolation:isolate}
+#clinical-directions .mc *,#clinical-directions .mc *::before,#clinical-directions .mc *::after{box-sizing:border-box}
+#clinical-directions .mc [hidden]{display:none!important}
+#clinical-directions .mc button,#clinical-directions .mc input,#clinical-directions .mc select{font:inherit;color:inherit}
+#clinical-directions .mc button{cursor:inherit}
+#clinical-directions .mc button:disabled{opacity:.55}
+#clinical-directions .mc button{border:0;background:none}
+#clinical-directions .mc h1,#clinical-directions .mc h2,#clinical-directions .mc h3,#clinical-directions .mc p{margin:0}
+#clinical-directions .mc h1{font-size:36px;line-height:1.16;font-weight:500;letter-spacing:-1.1px;max-width:650px}
+#clinical-directions .mc h2{font-size:22px;line-height:1.3;font-weight:500;letter-spacing:-.4px}
+#clinical-directions .mc h3{font-size:17px;font-weight:500;line-height:1.4}
+#clinical-directions .mc small,#clinical-directions .mc .mc-small{font-size:13px;line-height:1.5}
+#clinical-directions .mc .mc-muted{color:var(--mc-muted)}
+#clinical-directions .mc .mc-cap{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:500;color:var(--mc-muted);margin-bottom:12px}
+#clinical-directions .mc .mc-head{display:flex;align-items:center;gap:24px;min-height:78px;padding:18px 32px;border-bottom:1px solid var(--mc-line)}
+#clinical-directions .mc .mc-brand{font-size:25px;font-weight:600;letter-spacing:-1.2px;white-space:nowrap}
+#clinical-directions .mc .mc-brand span{color:var(--mc-accent)}
+#clinical-directions .mc .mc-head-status{margin-left:auto;font-size:12px;color:var(--mc-muted);padding-right:68px;white-space:nowrap}
+#clinical-directions .mc .mc-layout{display:grid;grid-template-columns:1fr}
+#clinical-directions .mc .mc-nav{display:flex;flex-wrap:wrap;gap:4px;padding:12px 28px;border-bottom:1px solid var(--mc-line)}
+#clinical-directions .mc .mc-nav button{padding:10px 12px;border-radius:7px;font-size:13px;white-space:nowrap}
+#clinical-directions .mc .mc-nav button[aria-current=page]{background:var(--mc-tint);color:var(--mc-accent);font-weight:500}
+#clinical-directions .mc .mc-main{padding:40px 36px 24px;min-width:0}
+#clinical-directions .mc .mc-title{margin-bottom:28px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+#clinical-directions .mc .mc-title p:not(.mc-cap){color:var(--mc-muted);margin-top:12px;font-size:14px}
+#clinical-directions .mc .mc-top-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#clinical-directions .mc .mc-button{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:44px;padding:10px 18px;border:1px solid var(--mc-line);border-radius:var(--mc-radius);background:var(--mc-surface);font-size:14px;font-weight:500;text-decoration:none}
+#clinical-directions .mc .mc-primary{background:var(--mc-accent);color:var(--mc-on-accent);border-color:var(--mc-accent)}
+#clinical-directions .mc .mc-quiet{background:transparent;border-color:transparent;padding:8px 0;color:var(--mc-accent);min-height:44px}
+#clinical-directions .mc .mc-button:hover{filter:brightness(.96)}
+#clinical-directions .mc .mc-home-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(230px,1fr);gap:32px;align-items:stretch}
+#clinical-directions .mc .mc-search{display:flex;align-items:center;gap:10px;background:var(--mc-surface);border:1px solid var(--mc-line);border-radius:var(--mc-radius);padding:0 14px;margin-bottom:18px}
+#clinical-directions .mc .mc-search input{border:0;background:transparent;min-height:48px;width:100%;min-width:0;outline-offset:0}
+#clinical-directions .mc .mc-disease-list{display:grid;grid-template-columns:1fr}
+#clinical-directions .mc .mc-disease{display:flex;align-items:center;justify-content:space-between;gap:14px;text-align:left;width:100%;padding:19px 12px;border-bottom:1px solid var(--mc-line);font-size:16px;min-height:66px}
+#clinical-directions .mc .mc-disease[aria-pressed=true]{background:var(--mc-tint);color:var(--mc-accent);border-radius:var(--mc-radius)}
+#clinical-directions .mc .mc-disease-number{display:none;color:var(--mc-muted);font-size:12px}
+#clinical-directions .mc .mc-disease i{flex-shrink:0}
+#clinical-directions .mc .mc-home-preview{background:var(--mc-tint);padding:26px;border-radius:var(--mc-radius);display:flex;flex-direction:column;gap:24px;min-width:0}
+#clinical-directions .mc .mc-home-preview .mc-button{margin-top:auto;width:100%}
+#clinical-directions .mc .mc-preview-lines{margin-top:8px;border-top:1px solid var(--mc-line);padding-top:20px;display:grid;gap:18px}
+#clinical-directions .mc .mc-preview-lines div{display:flex;justify-content:space-between;gap:12px;font-size:14px}
+#clinical-directions .mc .mc-recent{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;border-top:1px solid var(--mc-line);margin-top:36px;padding-top:20px}
+#clinical-directions .mc .mc-recent button{font-size:14px;text-align:left;display:flex;align-items:center;gap:10px;min-height:44px}
+#clinical-directions .mc .mc-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--mc-muted);font-size:11px;padding-top:40px}
+#clinical-directions .mc .mc-form-grid{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:28px;align-items:start}
+#clinical-directions .mc .mc-field{display:grid;gap:7px;min-width:0;font-size:14px}
+#clinical-directions .mc .mc-input{min-height:46px;padding:10px 12px;width:100%;min-width:0;background:var(--mc-surface);border:1px solid var(--mc-line);border-radius:var(--mc-radius);font-size:16px}
+#clinical-directions .mc .mc-input::placeholder{color:var(--mc-muted);opacity:.9}
+#clinical-directions .mc .mc-input[aria-invalid=true]{border:2px solid var(--mc-error);background:var(--mc-error-bg)}
+#clinical-directions .mc .mc-select-label{max-width:520px;flex:1;min-width:200px}
+#clinical-directions .mc .mc-block{border:0;border-top:1px solid var(--mc-line);margin:0;padding:24px 0;min-width:0}
+#clinical-directions .mc .mc-block h2{font-size:18px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+#clinical-directions .mc .mc-block h2 span{color:var(--mc-muted);font-size:12px;letter-spacing:1px}
+#clinical-directions .mc .mc-fields{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+#clinical-directions .mc .mc-question{border:0;padding:0;margin:0 0 20px;min-width:0}
+#clinical-directions .mc .mc-question:last-child{margin-bottom:0}
+#clinical-directions .mc .mc-question legend{font-size:14px;margin-bottom:10px;max-width:100%}
+#clinical-directions .mc .mc-options{display:flex;flex-wrap:wrap;gap:7px}
+#clinical-directions .mc .mc-option{position:relative;display:flex;align-items:center;gap:6px;min-height:44px;padding:8px 11px;background:var(--mc-surface);border:1px solid var(--mc-line);border-radius:var(--mc-radius);font-size:13px;white-space:nowrap}
+#clinical-directions .mc .mc-option:has(input:checked){background:var(--mc-tint);border-color:var(--mc-accent);color:var(--mc-accent)}
+#clinical-directions .mc .mc-option input{width:16px;height:16px;accent-color:var(--mc-accent);margin:0;flex-shrink:0}
+#clinical-directions .mc .mc-inline{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#clinical-directions .mc .mc-rail{border-left:1px solid var(--mc-line);padding-left:20px;display:grid;gap:24px}
+#clinical-directions .mc .mc-rail h3{font-size:14px;margin-bottom:12px}
+#clinical-directions .mc .mc-rail a{display:block;min-height:40px;padding:8px 0;color:var(--mc-muted);text-decoration:none;font-size:13px}
+#clinical-directions .mc .mc-progress{height:4px;background:var(--mc-line);border-radius:4px;margin-top:10px;overflow:hidden}
+#clinical-directions .mc .mc-progress span{display:block;background:var(--mc-accent);height:100%;transition:width 180ms ease}
+#clinical-directions .mc .mc-note{display:flex;align-items:flex-start;gap:10px;padding:13px 15px;background:var(--mc-tint);border-radius:var(--mc-radius);font-size:13px;line-height:1.6}
+#clinical-directions .mc .mc-note i{flex-shrink:0;margin-top:3px}
+#clinical-directions .mc .mc-warning{background:var(--mc-warning-bg);color:var(--mc-warning)}
+#clinical-directions .mc .mc-errors{background:var(--mc-error-bg);color:var(--mc-error);border-radius:var(--mc-radius);padding:12px 16px;font-size:13px;margin:16px 0}
+#clinical-directions .mc .mc-error-text{font-size:12px;color:var(--mc-error)}
+#clinical-directions .mc .mc-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px solid var(--mc-line);padding-top:22px}
+#clinical-directions .mc .mc-actions small{font-size:12px;color:var(--mc-muted)}
+#clinical-directions .mc .mc-flash{animation:mc-feedback 200ms ease-out 1}
+@keyframes mc-feedback{0%,100%{transform:translateX(0)}30%{transform:translateX(-3px)}65%{transform:translateX(3px)}}
+#clinical-directions .mc .mc-expand{animation:mc-reveal 200ms ease-out 1}
+@keyframes mc-reveal{from{opacity:.4;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+#clinical-directions .mc details{padding:20px 0;border-top:1px solid var(--mc-line)}
+#clinical-directions .mc details summary{font-weight:500;font-size:15px;min-height:32px}
+#clinical-directions .mc details p,#clinical-directions .mc details dl{font-size:14px;margin-top:16px;color:var(--mc-muted)}
+#clinical-directions .mc .mc-result-lead{padding:28px;background:var(--mc-tint);border-radius:var(--mc-radius);margin-bottom:20px}
+#clinical-directions .mc .mc-result-lead h2{margin:10px 0 18px;font-size:29px}
+#clinical-directions .mc .mc-result-grid{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:28px;align-items:start}
+#clinical-directions .mc .mc-data-row{display:flex;justify-content:space-between;gap:22px;flex-wrap:wrap;padding:16px 0;border-bottom:1px solid var(--mc-line);font-size:14px}
+#clinical-directions .mc .mc-data-row span:first-child{color:var(--mc-muted)}
+#clinical-directions .mc .mc-feedback-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+#clinical-directions .mc .mc-feedback-row button[aria-pressed=true]{background:var(--mc-tint);border-color:var(--mc-accent);color:var(--mc-accent)}
+#clinical-directions .mc .mc-settings{max-width:650px}
+#clinical-directions .mc .mc-setting-row{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;padding:24px 0;border-bottom:1px solid var(--mc-line)}
+#clinical-directions .mc .mc-setting-row p{margin-top:4px;font-size:13px;color:var(--mc-muted)}
+#clinical-directions .mc .mc-setting-row select{width:180px;min-width:0}
+#clinical-directions .mc .mc-check{display:flex;align-items:center;gap:10px;min-height:44px;font-size:14px}
+#clinical-directions .mc .mc-check input{width:20px;height:20px;accent-color:var(--mc-accent)}
+#clinical-directions .mc .mc-role-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+#clinical-directions .mc .mc-role-tabs button{padding:9px 12px;border:1px solid var(--mc-line);border-radius:var(--mc-radius);min-height:44px;font-size:13px}
+#clinical-directions .mc .mc-role-tabs button[aria-pressed=true]{background:var(--mc-accent);border-color:var(--mc-accent);color:var(--mc-on-accent)}
+#clinical-directions .mc .mc-table{width:100%;border-collapse:collapse;font-size:13px;margin:20px 0}
+#clinical-directions .mc .mc-table th{font-weight:500;text-align:left;color:var(--mc-muted);font-size:12px}
+#clinical-directions .mc .mc-table td,#clinical-directions .mc .mc-table th{padding:14px 8px;border-bottom:1px solid var(--mc-line);overflow-wrap:anywhere}
+#clinical-directions .mc .mc-mono{font:400 12px/1.6 'IBM Plex Mono',monospace}
+#clinical-directions .mc .mc-status-line{min-height:24px;margin-top:12px;font-size:13px;color:var(--mc-accent)}
+#clinical-directions .mc .mc-meta{display:flex;gap:18px;flex-wrap:wrap;margin-top:28px;color:var(--mc-muted);font-size:11px}
+#clinical-directions .mc .mc-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+#clinical-directions .mc .mc-chip{border:1px solid var(--mc-line);border-radius:6px;padding:7px 10px;font-size:12px;display:inline-flex;gap:8px;align-items:center}
+#clinical-directions .mc .mc-chip button{min-width:30px;min-height:30px}
+#clinical-directions .mc .mc-empty{font-size:14px;color:var(--mc-muted);padding:20px 0}
+#clinical-directions .mc .mc-change{margin:0 0 18px;justify-content:space-between;flex-wrap:wrap}
+#clinical-directions .mc .mc-change button{color:var(--mc-accent);text-decoration:underline}
+#clinical-directions .mc .mc-legend{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:14px;font-size:11px;color:var(--mc-muted)}
+#clinical-directions .mc .mc-swatch{display:inline-block;width:13px;height:13px;border-radius:50%;border:1px solid var(--mc-line);background:var(--mc-swatch)}
+#clinical-directions .mc-paper{--mc-bg:light-dark(#f7f3eb,#27251f);--mc-surface:light-dark(#fffdf8,#302e27);--mc-ink:light-dark(#2e353b,#f1eee7);--mc-muted:light-dark(#626a74,#bdbcb5);--mc-line:light-dark(#d6d4ca,#545249);--mc-accent:light-dark(#3559a2,#abc4ff);--mc-on-accent:light-dark(#fff,#172b50);--mc-tint:light-dark(#e7edf8,#303d59);--mc-radius:6px;border-radius:8px}
+#clinical-directions .mc-paper .mc-layout{grid-template-columns:145px minmax(0,1fr)}
+#clinical-directions .mc-paper .mc-nav{flex-direction:column;border-bottom:0;border-right:1px solid var(--mc-line);padding:32px 14px;align-items:stretch;justify-content:flex-start}
+#clinical-directions .mc-paper .mc-nav button{text-align:left;white-space:normal;font-size:12px}
+#clinical-directions .mc-paper .mc-main{padding:42px 36px 24px}
+#clinical-directions .mc-paper h1{font:400 40px/1.2 'PT Serif',serif;letter-spacing:-1.2px}
+#clinical-directions .mc-paper .mc-home-grid{grid-template-columns:1fr;gap:20px}
+#clinical-directions .mc-paper .mc-disease{padding:16px 12px;min-height:64px;gap:20px}
+#clinical-directions .mc-paper .mc-disease-number{display:inline}
+#clinical-directions .mc-paper .mc-disease-name{margin-right:auto}
+#clinical-directions .mc-paper .mc-home-preview{background:transparent;padding:18px 0;border-top:1px solid var(--mc-line);display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center}
+#clinical-directions .mc-paper .mc-home-preview h2{font-size:17px}
+#clinical-directions .mc-paper .mc-home-preview .mc-cap,#clinical-directions .mc-paper .mc-preview-lines{display:none}
+#clinical-directions .mc-paper .mc-home-preview .mc-button{margin:0;width:auto}
+#clinical-directions .mc-paper .mc-form-grid,#clinical-directions .mc-paper .mc-result-grid{grid-template-columns:1fr}
+#clinical-directions .mc-paper .mc-rail{display:flex;flex-wrap:wrap;justify-content:space-between;border-left:0;border-top:1px solid var(--mc-line);padding:18px 0}
+#clinical-directions .mc-paper .mc-rail a{display:inline-block;margin-right:16px}
+#clinical-directions .mc-paper .mc-result-lead{background:transparent;padding:0 0 24px;border-radius:0;border-bottom:2px solid var(--mc-accent)}
+#clinical-directions .mc-station{--mc-bg:light-dark(#f3f6f8,#19242d);--mc-surface:light-dark(#fff,#23333e);--mc-ink:light-dark(#22323e,#e6eef4);--mc-muted:light-dark(#596e7d,#b1c5d2);--mc-line:light-dark(#cddae3,#415865);--mc-accent:light-dark(#466e8b,#b0d3ec);--mc-on-accent:light-dark(#fff,#183344);--mc-tint:light-dark(#e4edf3,#304957);--mc-radius:8px;font-family:'IBM Plex Sans',sans-serif;border-radius:10px}
+#clinical-directions .mc-station .mc-layout{grid-template-columns:148px minmax(0,1fr)}
+#clinical-directions .mc-station .mc-nav{flex-direction:column;background:#22323e;color:#e9f1f6;border-bottom:0;padding:26px 12px;align-items:stretch;justify-content:flex-start}
+#clinical-directions .mc-station .mc-nav button{text-align:left;white-space:normal;font-size:12px}
+#clinical-directions .mc-station .mc-nav button[aria-current=page]{background:#3b596d;color:#fff}
+#clinical-directions .mc-station .mc-main{padding:32px 26px 24px}
+#clinical-directions .mc-station .mc-home-grid{grid-template-columns:minmax(0,1fr) 225px;gap:20px}
+#clinical-directions .mc-station .mc-disease{font-size:14px;min-height:60px;padding:15px 10px}
+#clinical-directions .mc-station .mc-home-preview{background:var(--mc-surface);border:1px solid var(--mc-line);padding:22px}
+#clinical-directions .mc-station .mc-home-preview h2{font-size:22px}
+#clinical-directions .mc-station .mc-form-grid,#clinical-directions .mc-station .mc-result-grid{grid-template-columns:minmax(0,1fr) 165px;gap:20px}
+#clinical-directions .mc-station .mc-fields{grid-template-columns:1fr}
+#clinical-directions .mc-station .mc-option{padding:8px;font-size:12px}
+#clinical-directions .mc.mc-compact .mc-block{padding:18px 0}
+#clinical-directions .mc.mc-compact .mc-data-row{padding:12px 0}
+#clinical-directions .mc.mc-compact .mc-disease{min-height:52px;padding-top:12px;padding-bottom:12px}
+#clinical-directions .mc.mc-reduce *,#clinical-directions .mc.mc-reduce *::before{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+@media(prefers-reduced-motion:reduce){#clinical-directions .mc *,#clinical-directions .mc *::before{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+@media(max-width:800px){#clinical-directions .mc .mc-head{padding:16px 22px}#clinical-directions .mc .mc-home-grid,#clinical-directions .mc-station .mc-home-grid{grid-template-columns:1fr}#clinical-directions .mc .mc-home-preview{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;padding:20px}#clinical-directions .mc .mc-home-preview .mc-preview-lines{display:none}#clinical-directions .mc .mc-home-preview .mc-button{width:auto;margin:0}#clinical-directions .mc .mc-form-grid,#clinical-directions .mc .mc-result-grid{grid-template-columns:1fr}#clinical-directions .mc .mc-rail{border-left:0;border-top:1px solid var(--mc-line);padding:18px 0;display:flex;flex-wrap:wrap;gap:24px}#clinical-directions .mc .mc-rail a{display:inline-block;margin-right:14px}#clinical-directions .mc .mc-title{margin-bottom:24px}#clinical-directions .mc .mc-main{padding:32px 24px}#clinical-directions .mc .mc-options{gap:6px}}
+@media(max-width:600px){#clinical-directions .mc{min-height:1200px;border-radius:8px}#clinical-directions .mc .mc-layout{grid-template-columns:1fr}#clinical-directions .mc .mc-nav{flex-direction:row;border-right:0;border-bottom:1px solid var(--mc-line);padding:10px 12px;gap:2px}#clinical-directions .mc .mc-nav button{font-size:12px;padding:9px 10px;text-align:center;min-height:44px}#clinical-directions .mc .mc-head{gap:10px;padding:16px}#clinical-directions .mc .mc-head-status{font-size:11px;padding-right:0;white-space:normal;text-align:right}#clinical-directions .mc .mc-brand{font-size:24px}#clinical-directions .mc .mc-main{padding:28px 18px 22px}#clinical-directions .mc h1{font-size:32px}#clinical-directions .mc-paper h1{font-size:34px}#clinical-directions .mc .mc-fields{grid-template-columns:1fr}#clinical-directions .mc .mc-home-preview{grid-template-columns:1fr}#clinical-directions .mc .mc-home-preview .mc-button{width:100%}#clinical-directions .mc .mc-disease{font-size:15px;min-height:68px}#clinical-directions .mc .mc-home-grid{gap:22px}#clinical-directions .mc .mc-input{font-size:16px}#clinical-directions .mc .mc-option{padding:9px;font-size:12px}#clinical-directions .mc .mc-options{gap:6px}#clinical-directions .mc .mc-result-lead{padding:20px}#clinical-directions .mc .mc-result-lead h2{font-size:26px}#clinical-directions .mc .mc-role-tabs button{width:100%;text-align:left}#clinical-directions .mc .mc-table{font-size:12px}#clinical-directions .mc .mc-table td,#clinical-directions .mc .mc-table th{padding:12px 4px}#clinical-directions .mc .mc-setting-row select{width:100%}#clinical-directions .mc .mc-actions>.mc-primary{width:100%}}
+</style>
+<div id="clinical-directions" class="viz-carousel" aria-label="Концепции медицинского сервиса" data-previous-label="Предыдущая концепция" data-next-label="Следующая концепция">
+  <section data-variant="Тихая клиника" aria-label="Тихая клиника"><div class="mc mc-calm" data-concept="calm" aria-label="Тихая клиника — интерактивный макет"></div></section>
+  <section data-variant="Клинический бланк" aria-label="Клинический бланк" hidden><div class="mc mc-paper" data-concept="paper" aria-label="Клинический бланк — интерактивный макет"></div></section>
+  <section data-variant="Клиническая станция" aria-label="Клиническая станция" hidden><div class="mc mc-station" data-concept="station" aria-label="Клиническая станция — интерактивный макет"></div></section>
+</div>
+<script>
+(() => {
+const root = document.getElementById('clinical-directions');
+const diseases = ['Острый бронхит','Хронический бронхит','Пневмония','Обострение ХОБЛ','Фарингит и тонзиллит','Синусит'];
+const questions = [
+ ['Кашель с гнойной мокротой','Выраженная интоксикация'],
+ ['Увеличение объёма отделяемой мокроты','Усиление «гнойности» мокроты'],
+ ['Сердечная недостаточность','Непереносимость β-лактамов'],
+ ['Увеличение объёма отделяемой мокроты','Усиление «гнойности» мокроты'],
+ ['Непереносимость β-лактамов','Беременность и лактация'],
+ ['Гнойное отделяемое из носа ≥ 3 дней','Иммуносупрессивное состояние']
+];
+const info = {
+ calm:{title:'С чего начнём?',eyebrow:'Рабочее место врача',font:'Golos Text',palette:['#F5F8F6','#183B36','#38675A','#E6F0EA']},
+ paper:{title:'Клинический случай',eyebrow:'Новый расчёт',font:'PT Serif + Golos Text',palette:['#F7F3EB','#2E353B','#3559A2','#E7EDF8']},
+ station:{title:'Рабочее место',eyebrow:'Клиническая станция',font:'IBM Plex Sans + Mono',palette:['#F3F6F8','#22323E','#466E8B','#E4EDF3']}
+};
+const views=[['home','Главная'],['form','Новый расчёт'],['result','Результат'],['settings','Настройки'],['expert','Специалисту']];
+const saved = window.openai?.widgetState;
+const snapshots = {};
+const renders = {};
+const icon = name => `<i data-lucide="${name}" aria-hidden="true"></i>`;
+const esc = value => String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const motionOff = app => app.classList.contains('mc-reduce') || matchMedia('(prefers-reduced-motion: reduce)').matches;
+const labelAnswer = value => ({yes:'Да',no:'Нет',unknown:'Неизвестно'}[value] || 'Не заполнено');
+root.querySelectorAll('.mc').forEach(app => {
+ const key=app.dataset.concept, cfg=info[key];
+ const initial=saved?.privateContent?.[key];
+ const state={view:'home',disease:0,age:'35',answers:{},therapy:'',medication:'',theme:'system',density:'comfort',reduce:false,role:'pharmacist',...initial};
+ if(!views.some(v=>v[0]===state.view))state.view='home';
+ if(!Number.isInteger(state.disease)||state.disease<0||state.disease>5)state.disease=0;
+ if(!state.answers||typeof state.answers!=='object')state.answers={};
+ snapshots[key]=state;
+ let previousDisease=null;
+ const uid = x => `${key}-${x}`;
+ const button=(text,action,primary=false,extra='')=>`<button type="button" class="mc-button cursor-interaction ${primary?'mc-primary':''}" data-action="${action}" ${extra}>${text}</button>`;
+ function persist(){
+  const modelContent={концепция:app.parentElement.dataset.variant,страница:views.find(v=>v[0]===state.view)?.[1],нозология:diseases[state.disease]};
+  window.openai?.setWidgetState?.({modelContent,privateContent:snapshots})?.catch(()=>{});
+ }
+ function radios(name,label,options=[['yes','Да'],['no','Нет'],['unknown','Неизвестно']],value=state.answers[name]){
+  return `<fieldset class="mc-question" data-question="${name}" aria-describedby="${uid(name+'-error')}"><legend>${label}</legend><div class="mc-options">${options.map(([v,t])=>`<label class="mc-option cursor-interaction"><input type="radio" name="${uid(name)}" value="${v}" data-answer="${name}" ${value===v?'checked':''}>${t}</label>`).join('')}</div><div class="mc-error-text" id="${uid(name+'-error')}" data-error="${name}" hidden></div></fieldset>`;
+ }
+ function home(){return `<div class="mc-title"><div><p class="mc-cap">${cfg.eyebrow}</p><h1>${cfg.title}</h1></div><small class="mc-muted">27 октября 2026</small></div>
+ <div class="mc-home-grid"><div><label class="mc-search">${icon('search')}<input aria-label="Найти нозологию" placeholder="Найти нозологию" data-search autocomplete="off"></label>
+ <div class="mc-disease-list">${diseases.map((d,i)=>`<button type="button" class="mc-disease cursor-interaction" data-disease="${i}" aria-pressed="${state.disease===i}"><span class="mc-disease-number">0${i+1}</span><span class="mc-disease-name">${d}</span>${icon(state.disease===i?'check':'arrow-right')}</button>`).join('')}</div><p class="mc-empty" data-search-empty hidden>Нозология не найдена</p></div>
+ <aside class="mc-home-preview"><div><p class="mc-cap">Новый случай</p><h2 data-preview-name>${diseases[state.disease]}</h2><div class="mc-preview-lines"><div><span>Форма</span><span>На одной странице</span></div><div><span>Черновик</span><span>В этом макете</span></div><div><span>Пациент</span><span>Без ФИО</span></div></div></div>${button('Заполнить данные '+icon('arrow-right'),'open-form',true)}</aside></div>
+ <div class="mc-recent"><div><p class="mc-cap">Продолжить работу</p><button type="button" class="cursor-interaction" data-action="open-form">${icon('file-clock')}<span>Черновик · ${diseases[state.disease]}</span>${icon('arrow-right')}</button></div><small class="mc-muted">Сегодня</small></div>`;}
+ function rail(){return `<aside class="mc-rail"><div><h3>Разделы формы</h3><a href="#${uid('patient')}">01 · Пациент</a><a href="#${uid('signs')}">02 · Признаки</a><a href="#${uid('therapy')}">03 · Терапия</a></div><div><h3>Заполненность</h3><small class="mc-muted" data-completion></small><div class="mc-progress" role="progressbar" aria-label="Заполненность формы" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0"><span></span></div></div><small class="mc-muted">«Неизвестно» — отдельный ответ.</small></aside>`;}
+ function form(){return `<div class="mc-title"><div><p class="mc-cap">Новый клинический случай</p><h1>Данные пациента</h1></div><small class="mc-muted">Одна страница</small></div>
+ <form novalidate data-form><div class="mc-field mc-select-label"><label for="${uid('disease')}">Нозология</label><select class="mc-input" id="${uid('disease')}" data-nosology>${diseases.map((d,i)=>`<option value="${i}" ${state.disease===i?'selected':''}>${d}</option>`).join('')}</select></div><div class="mc-status-line" data-form-status aria-live="polite"></div>
+ ${previousDisease?`<div class="mc-note mc-change"><span>Нозология изменена. Общие данные сохранены.</span><button type="button" class="cursor-interaction" data-action="undo-disease">Отменить</button></div>`:''}
+ <div class="mc-errors" data-errors role="alert" hidden></div><div class="mc-form-grid"><div>
+ <section class="mc-block" id="${uid('patient')}"><h2><span>01</span> Пациент</h2><div class="mc-fields"><div class="mc-field"><label for="${uid('age')}">Возраст, лет</label><input class="mc-input" id="${uid('age')}" name="age" inputmode="numeric" autocomplete="off" value="${esc(state.age)}" aria-describedby="${uid('age-hint')} ${uid('age-error')}" data-age><small class="mc-muted" id="${uid('age-hint')}">Для взрослых пациентов</small><span class="mc-error-text" id="${uid('age-error')}" data-error="age" hidden></span></div><div class="mc-note">${icon('shield-check')}<span>ФИО и контакты пациента не нужны.</span></div></div></section>
+ <section class="mc-block" id="${uid('signs')}"><h2><span>02</span> Признаки и ограничения</h2><div data-related>${questions[state.disease].map((q,i)=>radios('q'+i,q)).join('')}</div></section>
+ <section class="mc-block" id="${uid('therapy')}"><h2><span>03</span> Сопутствующая терапия</h2>${radios('therapy','Какие препараты принимает пациент?',[['unknown','Неизвестно'],['none','Не принимает'],['list','Указать препараты']],state.therapy)}<div data-medication-wrap ${state.therapy==='list'?'':'hidden'} class="mc-field mc-expand"><label for="${uid('medication')}">Название препарата</label><input class="mc-input" id="${uid('medication')}" placeholder="Начните вводить название" value="${esc(state.medication)}" data-medication><small class="mc-muted">В рабочем сервисе — выбор из справочника.</small></div><div class="mc-note mc-warning" data-therapy-warning ${state.therapy==='unknown'?'':'hidden'}>${icon('triangle-alert')}<span>Список неизвестен. Проверка взаимодействий будет неполной.</span></div></section>
+ <div class="mc-actions"><small data-draft-status>Демонстрационный черновик</small><button type="button" data-action="review-form" class="mc-button mc-primary cursor-interaction">Посмотреть результат ${icon('arrow-right')}</button></div></div>${rail()}</div></form>`;}
+ function result(){return `<div class="mc-title"><div><p class="mc-cap">Демонстрационный снимок</p><h1>Результат расчёта</h1><p>${diseases[state.disease]}</p></div>${button('Изменить данные','open-form')}</div>
+ <div class="mc-result-grid"><div><section class="mc-result-lead"><p class="mc-cap">Статус проверки</p><h2>Нужна врачебная проверка</h2><div class="mc-note mc-warning">${icon('shield-alert')}<span>Демо-данные. Медицинский контент DRAFT.</span></div></section>
+ <div class="mc-note mc-warning">${icon('triangle-alert')}<span>Проверка взаимодействий не завершена. Это не означает отсутствия ограничений.</span></div>
+ <section class="mc-block"><h2>Данные для проверки</h2><div class="mc-data-row"><span>Возраст</span><span>${esc(state.age||'35')} лет</span></div><div class="mc-data-row"><span>Сопутствующая терапия</span><span>${state.therapy==='none'?'Не принимает':state.therapy==='list'?'Список указан':'Неизвестно'}</span></div><div class="mc-data-row"><span>Медицинский пакет</span><span class="mc-mono">DRAFT · v0.1.0</span></div></section>
+ <details><summary>Почему требуется проверка</summary><p>Это пример незавершённой проверки безопасности. В рабочем результате здесь отображаются причины, полученные из клинического алгоритма.</p></details>
+ <details><summary>Исходные ответы</summary>${questions[state.disease].map((q,i)=>`<div class="mc-data-row"><span>${q}</span><span>${labelAnswer(state.answers['q'+i])}</span></div>`).join('')}</details>
+ <details><summary>Источники и версия</summary><p>Медицинский пакет v0.1.0 · DRAFT. Правила, дозировки и рекомендации в этом макете не рассчитываются.</p></details>
+ <div class="mc-actions">${button('Сохранить демо-снимок','save-result',true)}${button('Текст для копирования','show-copy')}</div><div data-copy hidden class="mc-note mc-expand">Демонстрационный снимок: ${diseases[state.disease]}. Требуется врачебная проверка. Медицинский контент DRAFT.</div><div class="mc-status-line" data-result-status aria-live="polite"></div></div>
+ <aside class="mc-rail"><div><h3>Оценка результата</h3><small class="mc-muted">Удобно ли читать итог?</small><div class="mc-feedback-row">${button('Да','feedback-yes',false,'aria-pressed="false"')}${button('Нет','feedback-no',false,'aria-pressed="false"')}</div><div class="mc-status-line" data-feedback-status aria-live="polite"></div></div><small class="mc-muted">Критические ограничения всегда раскрыты.</small></aside></div>`;}
+ function settings(){return `<div class="mc-title"><div><p class="mc-cap">Рабочее пространство</p><h1>Настройки</h1></div></div><div class="mc-settings"><div class="mc-setting-row"><div><h3>Оформление</h3><p>Светлое, тёмное или системное</p></div><select class="mc-input" data-theme aria-label="Оформление">${[['system','Как в системе'],['light','Светлое'],['dark','Тёмное']].map(([v,t])=>`<option value="${v}" ${state.theme===v?'selected':''}>${t}</option>`).join('')}</select></div><div class="mc-setting-row"><div><h3>Плотность</h3><p>Размер текста сохраняется</p></div><select class="mc-input" data-density aria-label="Плотность интерфейса"><option value="comfort" ${state.density==='comfort'?'selected':''}>Свободная</option><option value="compact" ${state.density==='compact'?'selected':''}>Компактная</option></select></div><div class="mc-setting-row"><div><h3>Анимация</h3><p>Ошибки остаются видны и без движения</p></div><label class="mc-check cursor-interaction"><input type="checkbox" data-reduce ${state.reduce?'checked':''}>Уменьшить движение</label></div><div class="mc-setting-row"><div><h3>Роль</h3><p>Выдаётся администратором</p></div><span>Врач</span></div><div class="mc-setting-row"><div><h3>Данные</h3><p>В макете используются вымышленные случаи</p></div><span class="mc-mono">ДЕМО</span></div><div class="mc-status-line" data-settings-status aria-live="polite"></div></div>`;}
+ function expert(){return `<div class="mc-title"><div><p class="mc-cap">Демонстрация ролевых интерфейсов</p><h1>Инструменты специалиста</h1></div></div><div class="mc-role-tabs" aria-label="Просмотр роли">${[['pharmacist','Клинический фармаколог'],['clinical','Клинический администратор'],['admin','Системный администратор']].map(([v,t])=>`<button type="button" class="cursor-interaction" data-role="${v}" aria-pressed="${state.role===v}">${t}</button>`).join('')}</div>
+ ${state.role==='pharmacist'?`<h2>Проверка случая</h2><p class="mc-muted mc-small">${diseases[state.disease]} · демонстрационный снимок</p><table class="mc-table"><thead><tr><th>Проверка</th><th>Статус</th></tr></thead><tbody><tr><td>Исходные данные</td><td>Доступны</td></tr><tr><td>Взаимодействия</td><td>Нужны данные о терапии</td></tr><tr><td>Версия правил</td><td class="mc-mono">v0.1.0 · DRAFT</td></tr></tbody></table><details><summary>Трассировка решения</summary><p>Исходные ответы → ограничения → статус безопасности → снимок результата.</p></details>${button('Предпросмотр выгрузки','export-preview',true)}`:''}
+ ${state.role==='clinical'?`<h2>Медицинский контент</h2><table class="mc-table"><thead><tr><th>Пакет</th><th>Версия</th><th>Статус</th></tr></thead><tbody><tr><td>Респираторные заболевания</td><td class="mc-mono">0.1.0</td><td>DRAFT</td></tr></tbody></table><div class="mc-note mc-warning">${icon('file-check')}<span>Проверка формата и эталонных случаев предшествует медицинскому утверждению.</span></div><div style="margin-top:22px">${button('Посмотреть проверки','content-check',true)}</div>`:''}
+ ${state.role==='admin'?`<h2>Пользователи и доступ</h2><table class="mc-table"><thead><tr><th>Пользователь</th><th>Роль</th><th>Доступ</th></tr></thead><tbody><tr><td class="mc-mono">doctor-demo</td><td>Врач</td><td>Активен</td></tr><tr><td class="mc-mono">pharma-demo</td><td>Клинический фармаколог</td><td>Активен</td></tr><tr><td class="mc-mono">clinical-demo</td><td>Клинический администратор</td><td>Активен</td></tr></tbody></table>${button('Матрица ролей','role-matrix',true)}`:''}
+ <div data-expert-detail class="mc-note mc-expand" style="margin-top:20px" hidden></div><div class="mc-status-line" data-expert-status aria-live="polite"></div>`;}
+ function updateAppearance(){app.style.colorScheme=state.theme==='system'?'light dark':state.theme;app.classList.toggle('mc-compact',state.density==='compact');app.classList.toggle('mc-reduce',!!state.reduce);}
+ function completion(){const n=(Number(state.age)>=18?1:0)+(state.answers.q0?1:0)+(state.answers.q1?1:0)+(state.therapy?1:0);const label=app.querySelector('[data-completion]'),bar=app.querySelector('.mc-progress');if(label)label.textContent=`${n} из 4 обязательных ответов`;if(bar){bar.setAttribute('aria-valuenow',String(n));bar.querySelector('span').style.width=(n/4*100)+'%';}}
+ function redraw(){
+  app.innerHTML=`<header class="mc-head"><button type="button" class="mc-brand cursor-interaction" data-view="home" aria-label="Клиника — главная">клиника<span>.</span></button><span class="mc-head-status">Концепция · Демо · DRAFT</span></header><div class="mc-layout"><nav class="mc-nav" aria-label="Разделы сервиса">${views.map(([v,t])=>`<button type="button" class="cursor-interaction" data-view="${v}" ${state.view===v?'aria-current="page"':''}>${t}</button>`).join('')}</nav><main class="mc-main">${({home,form,result,settings,expert}[state.view])()}<footer class="mc-footer"><span>Макет интерфейса · Клинические решения не рассчитываются</span><span>27.10.2026</span></footer><div class="mc-legend" aria-label="Палитра и шрифты">${cfg.palette.map(c=>`<span class="mc-swatch" style="--mc-swatch:${c}" aria-label="${c}"></span>`).join('')}<span>${cfg.font}</span></div></main></div>`;
+  updateAppearance();completion();
+  if(typeof lucide!=='undefined')lucide.createIcons({attrs:{width:16,height:16}});
+ }
+ function clearError(name){const error=app.querySelector(`[data-error="${name}"]`);if(error)error.hidden=true;if(name==='age')app.querySelector('[data-age]')?.removeAttribute('aria-invalid');else app.querySelector(`[data-question="${name}"]`)?.removeAttribute('aria-invalid');const errorBox=app.querySelector('[data-errors]');if(errorBox)errorBox.hidden=true;}
+ function validate(){
+  const errors=[];
+  if(!/^\d+$/.test(state.age)||Number(state.age)<18){errors.push(['age','Укажите возраст взрослого пациента: число от 18 лет.']);}
+  ['q0','q1'].forEach(k=>{if(!state.answers[k])errors.push([k,'Выберите «Да», «Нет» или «Неизвестно».']);});
+  if(!state.therapy)errors.push(['therapy','Укажите состояние сопутствующей терапии.']);
+  if(state.therapy==='list'&&!state.medication.trim())errors.push(['therapy','Укажите препарат или выберите другое состояние списка.']);
+  if(!errors.length)return true;
+  const summary=app.querySelector('[data-errors]');summary.hidden=false;summary.textContent=`Проверьте поля: ${errors.length}. Введённые данные сохранены в макете.`;
+  errors.forEach(([name,text])=>{const e=app.querySelector(`[data-error="${name}"]`);e.textContent=text;e.hidden=false;const target=name==='age'?app.querySelector('[data-age]'):app.querySelector(`[data-question="${name}"]`);target.setAttribute('aria-invalid','true');target.classList.remove('mc-flash');void target.offsetWidth;if(!motionOff(app))target.classList.add('mc-flash');});
+  const first=errors[0][0];const focus=first==='age'?app.querySelector('[data-age]'):app.querySelector(`[data-question="${first}"] input`);focus?.focus({preventScroll:true});focus?.scrollIntoView({block:'nearest',behavior:motionOff(app)?'auto':'smooth'});return false;
+ }
+ app.addEventListener('click',e=>{
+  const target=e.target.closest('button');if(!target)return;
+  if(target.dataset.view){state.view=target.dataset.view;redraw();persist();return;}
+  if(target.dataset.disease!==undefined){state.disease=Number(target.dataset.disease);previousDisease=null;state.answers={};redraw();persist();return;}
+  if(target.dataset.role){state.role=target.dataset.role;redraw();persist();return;}
+  const action=target.dataset.action;
+  if(action==='review-form'&&validate()){state.view='result';redraw();persist();}
+  if(action==='open-form'){state.view='form';redraw();persist();}
+  if(action==='undo-disease'&&previousDisease){state.disease=previousDisease.disease;state.answers=previousDisease.answers;previousDisease=null;redraw();persist();}
+  if(action==='save-result'){app.querySelector('[data-result-status]').textContent='Демо-снимок сохранён в этом просмотре.';persist();}
+  if(action==='show-copy'){const block=app.querySelector('[data-copy]');block.hidden=!block.hidden;target.setAttribute('aria-expanded',String(!block.hidden));}
+  if(action?.startsWith('feedback-')){app.querySelectorAll('[data-action^="feedback-"]').forEach(b=>b.setAttribute('aria-pressed',String(b===target)));app.querySelector('[data-feedback-status]').textContent='Оценка отмечена в макете.';}
+  if(['export-preview','content-check','role-matrix'].includes(action)){const detail=app.querySelector('[data-expert-detail]');detail.hidden=false;detail.textContent=({ 'export-preview':'Предпросмотр CSV / XLSX: ID случая · нозология · дата · версия правил · статус проверки.', 'content-check':'Формат JSON → связность правил → эталонные случаи → медицинское утверждение. Публикация — отдельное действие.', 'role-matrix':'Врач — расчёты. Фармаколог — расчёты и выгрузка. Клинический администратор — медицинские пакеты. Системный администратор — пользователи.' })[action];}
+ });
+ app.addEventListener('input',e=>{
+  if(e.target.matches('[data-search]')){const q=e.target.value.toLocaleLowerCase('ru').trim();let found=0;app.querySelectorAll('[data-disease]').forEach(b=>{b.hidden=!diseases[Number(b.dataset.disease)].toLocaleLowerCase('ru').includes(q);if(!b.hidden)found++;});app.querySelector('[data-search-empty]').hidden=found>0;}
+  if(e.target.matches('[data-age]')){state.age=e.target.value;clearError('age');completion();persist();}
+  if(e.target.matches('[data-medication]')){state.medication=e.target.value;clearError('therapy');persist();}
+ });
+ app.addEventListener('focusout',e=>{if(e.target.matches('[data-age]')&&state.age&&(!/^\d+$/.test(state.age)||Number(state.age)<18)){const field=app.querySelector('[data-error="age"]');field.textContent='Введите возраст числом от 18 лет.';field.hidden=false;e.target.setAttribute('aria-invalid','true');if(!motionOff(app))e.target.classList.add('mc-flash');}});
+ app.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.matches('[data-nosology]')){previousDisease={disease:state.disease,answers:{...state.answers}};state.disease=Number(t.value);state.answers={};redraw();app.querySelector('[data-nosology]').focus({preventScroll:true});app.querySelector('[data-form-status]').textContent='Связанные вопросы обновлены.';}
+  if(t.dataset.answer){const name=t.dataset.answer;if(name==='therapy'){state.therapy=t.value;app.querySelector('[data-medication-wrap]').hidden=t.value!=='list';app.querySelector('[data-therapy-warning]').hidden=t.value!=='unknown';}else state.answers[name]=t.value;clearError(name);completion();app.querySelector('[data-draft-status]').textContent='Ввод сохранён в макете';}
+  if(t.matches('[data-theme]')){state.theme=t.value;updateAppearance();app.querySelector('[data-settings-status]').textContent='Оформление применено к этому макету.';}
+  if(t.matches('[data-density]')){state.density=t.value;updateAppearance();app.querySelector('[data-settings-status]').textContent='Плотность изменена.';}
+  if(t.matches('[data-reduce]')){state.reduce=t.checked;updateAppearance();app.querySelector('[data-settings-status]').textContent=state.reduce?'Движение отключено. Текст ошибок остаётся видимым.':'Используется системная настройка движения.';}
+  persist();
+ });
+ app.addEventListener('submit',e=>{e.preventDefault();if(validate()){state.view='result';redraw();persist();}});
+ app.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('[data-form] input')){e.preventDefault();if(validate()){state.view='result';redraw();persist();}}});
+ renders[key]=redraw;
+ redraw();
+ if(typeof Tweak!=='undefined'){
+  const design={radius:key==='paper'?6:key==='station'?8:12};
+  const tweak=new Tweak({container:app,onChange:()=>app.style.setProperty('--mc-radius',design.radius+'px')});
+  tweak.addSlider(design,'radius',{label:'Скругление полей',min:4,max:18,step:2,unit:'px',reference:'--mc-radius'});
+ }
+});
+window.addEventListener('openai:set_globals',event=>{
+ const incoming=event.detail?.globals?.widgetState?.privateContent;if(!incoming)return;
+ Object.entries(incoming).forEach(([key,value])=>{if(snapshots[key]&&value&&typeof value==='object'){Object.assign(snapshots[key],value);if(!views.some(v=>v[0]===snapshots[key].view))snapshots[key].view='home';if(!Number.isInteger(snapshots[key].disease)||snapshots[key].disease<0||snapshots[key].disease>5)snapshots[key].disease=0;renders[key]();}});
+});
+})();
+</script>

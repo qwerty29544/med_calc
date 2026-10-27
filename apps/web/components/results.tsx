@@ -24,7 +24,7 @@ import {
 import type { EvaluationView, Regimen, TherapyOption } from '../../../packages/contracts/src/index';
 import { api, dateText, errorText, post, type Catalog, type User } from './api';
 import { Badge, Empty, ErrorNotice, Loading, PageTitle, Success } from './ui';
-import { clinicalText, factText } from './clinical-text';
+import { clinicalText, factText, recommendationText } from './clinical-text';
 
 const statusLabels: Record<string, string> = {
   COMPLETED: 'Расчёт завершён',
@@ -78,7 +78,7 @@ export function ResultContent({
   const [copyError, setCopyError] = useState('');
   async function copy() {
     try {
-      await navigator.clipboard.writeText(clinicalText(result.copy_text));
+      await navigator.clipboard.writeText(recommendationText(result.copy_text, result.demo));
       setCopied(true);
       setCopyError('');
     } catch {
@@ -120,16 +120,9 @@ export function ResultContent({
             {statusLabels[result.status] || result.status}
           </Badge>
         </div>
-        {result.demo && (
-          <p className="result-demo">
-            <ShieldAlert size={16} />
-            Демонстрационный результат. Медицинский контент не утверждён для клинических назначений.
-          </p>
-        )}
         <div className={`safety-line ${completeSafety ? 'complete' : 'incomplete'}`}>
           {completeSafety ? <ShieldCheck size={18} /> : <ShieldAlert size={18} />}
           <strong>{safetyLabels[result.safety_status] || 'Требуется проверка безопасности'}</strong>
-          {!completeSafety && <span>Не означает отсутствие противопоказаний и взаимодействий.</span>}
         </div>
       </section>
       {warnings.length > 0 && (
@@ -167,8 +160,7 @@ export function ResultContent({
             <ListIcon />
           </span>
           <div>
-            <h2>Почему получен этот результат</h2>
-            <p>Объяснение на основе введённых данных и правил</p>
+            <h2>Объяснение</h2>
           </div>
           <ChevronRight size={17} />
         </summary>
@@ -191,7 +183,6 @@ export function ResultContent({
             <div className="panel-heading">
               <div>
                 <h2>Текст рекомендации</h2>
-                <p>Структурированный текст для копирования</p>
               </div>
               <button className="button secondary small" onClick={copy}>
                 {copied ? <Check size={15} /> : <Clipboard size={15} />}
@@ -200,7 +191,7 @@ export function ResultContent({
             </div>
             {copyError && <ErrorNotice message={copyError} />}
             <pre className="recommendation-text" tabIndex={0}>
-              {clinicalText(result.copy_text)}
+              {recommendationText(result.copy_text, result.demo)}
             </pre>
           </section>
           <details className="panel details-panel">
@@ -210,9 +201,6 @@ export function ResultContent({
               <ChevronRight size={17} />
             </summary>
             <div className="details-body">
-              <p className="muted">
-                Результат связан с конкретными версиями контента и не меняется при обновлении правил.
-              </p>
               <div className="version-list">
                 {Object.entries(result.versions).map(([key, version]) => (
                   <div key={key}>
@@ -247,7 +235,6 @@ export function ResultContent({
                 <ChevronRight size={17} />
               </summary>
               <div className="details-body">
-                <p className="muted">Последовательность выполнения, зафиксированная сервером.</p>
                 <pre className="json-view">{JSON.stringify(result.trace, null, 2)}</pre>
               </div>
             </details>
@@ -426,10 +413,6 @@ export function SavedResult({ id, catalog, user }: { id: string; catalog?: Catal
           </Link>
         }
       />
-      <div className="immutable-note">
-        <ShieldCheck size={16} />
-        Этот результат сохранён как неизменяемый снимок данных и версий правил.
-      </div>
       <div className="result-layout">
         <div>
           <ResultContent evaluation={data} user={user} />
@@ -466,16 +449,10 @@ export function SavedResult({ id, catalog, user }: { id: string; catalog?: Catal
         <aside>
           <Feedback id={id} />
           <div className="context-help">
-            <h3>Решение остаётся за врачом</h3>
-            <p>
-              Оцените применимость результата к клиническому случаю. Система не заменяет профессиональную
-              оценку.
-            </p>
             <Link href={`/app/cases/${data.case_id}`} className="text-link">
               Открыть исходный случай
               <ArrowRight size={14} />
             </Link>
-            <p className="small-text">Изменения исходного случая не изменят этот результат.</p>
           </div>
         </aside>
       </div>
@@ -528,11 +505,6 @@ export function Feedback({
         <MessageSquare size={23} />
       </span>
       <h2>Обратная связь</h2>
-      <p>
-        {onSubmit
-          ? 'При отправке отзыва этот результат сохранится автоматически.'
-          : 'Ваше мнение помогает медицинской команде оценивать работу системы.'}
-      </p>
       {success ? (
         <Success>Обратная связь сохранена</Success>
       ) : (
@@ -634,7 +606,6 @@ export function HistoryPage({ catalog, user }: { catalog?: Catalog; user: User }
       <PageTitle
         eyebrow="КЛИНИЧЕСКИЕ СЛУЧАИ"
         title="История расчётов"
-        description="Сохранённые результаты, входные данные и версии медицинского контента."
         action={
           <Link className="button primary" href="/app/new">
             Новый расчёт
@@ -736,7 +707,7 @@ export function HistoryPage({ catalog, user }: { catalog?: Catalog; user: User }
             </table>
           </div>
         )}
-        <div className="table-footer">{filtered.length} результатов · Доступ по роли и авторству</div>
+        <div className="table-footer">Результатов: {filtered.length}</div>
       </section>
     </>
   );

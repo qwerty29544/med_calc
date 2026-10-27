@@ -7,6 +7,19 @@ export function clinicalText(text: string) {
     .replaceAll('высоко вероятна', 'высоковероятна')
     .replaceAll('этиология ОТФ', 'этиология острого тонзиллофарингита');
 }
+// Presentation only: canonical warnings and persisted snapshots remain untouched.
+export function recommendationText(text: string, demo: boolean) {
+  const display = clinicalText(text);
+  if (!demo) return display;
+  const omitted = new Set([
+    'Демонстрационный расчет. Медицинский пакет не утвержден.',
+    'Внимание: Демонстрационный расчет: медицинский пакет DRAFT не утвержден для клинического применения.',
+  ]);
+  return display
+    .split('\n')
+    .filter((line) => !omitted.has(line.trim()))
+    .join('\n');
+}
 export function enumLabel(value: string) {
   return (
     ({ GOLD_I_II: 'GOLD I–II', GOLD_III: 'GOLD III', GOLD_IV: 'GOLD IV' } as Record<string, string>)[value] ||

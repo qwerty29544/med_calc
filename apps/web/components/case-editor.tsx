@@ -30,7 +30,7 @@ import type {
   Medications,
 } from '../../../packages/contracts/src/index';
 import { api, ApiError, errorText, post, type Catalog, type User } from './api';
-import { Badge, ErrorNotice, Loading, PageTitle, PrivacyNote } from './ui';
+import { Badge, ErrorNotice, Loading, PageTitle } from './ui';
 import { Feedback, ResultContent, type FeedbackInput } from './results';
 import { clinicalText, factText, enumLabel, displayUnit } from './clinical-text';
 import { useCaseDraft } from './use-case-draft';
@@ -78,8 +78,10 @@ function CaseEditorSession({ id, catalog, user }: { id: string; catalog?: Catalo
   const lastBlock = useRef('');
   useEffect(() => {
     if (blockKey && lastBlock.current && blockKey !== lastBlock.current && !editing) {
-      anchor.current?.focus({ preventScroll: true });
-      anchor.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      // New server questions must not steal focus from a field being edited elsewhere.
+      if (document.activeElement === document.body || anchor.current?.contains(document.activeElement)) {
+        anchor.current?.focus({ preventScroll: true });
+      }
     }
     if (blockKey) lastBlock.current = blockKey;
   }, [blockKey, editing]);
@@ -93,6 +95,12 @@ function CaseEditorSession({ id, catalog, user }: { id: string; catalog?: Catalo
     !preview.isFetching &&
     preview.data?.status === 'COMPLETED' &&
     !editing;
+  function validateForm() {
+    if (!form.current) return false;
+    if (form.current.checkValidity()) return true;
+    form.current.querySelector<HTMLInputElement>('input:invalid, select:invalid, textarea:invalid')?.focus();
+    return false;
+  }
   function edit(code: string) {
     const fact = catalog?.facts.find((f) => f.fact_code === code);
     if (fact && draft && !locked && !changes.dirty) setEditing({ fact, value: draft.facts[code] });
@@ -137,6 +145,10 @@ function CaseEditorSession({ id, catalog, user }: { id: string; catalog?: Catalo
     (q) => draft.facts[q.fact_code]?.state === 'UNKNOWN',
   );
   const fields = editing ? [editing.fact] : block;
+  const retained = answers.flatMap(([code]) => {
+    const definition = catalog?.facts.find((fact) => fact.fact_code === code);
+    return definition && !fields.some((field) => field.fact_code === code) ? [definition] : [];
+  });
   return (
     <>
       <Link href="/app/new" className="back-link">
@@ -144,9 +156,8 @@ function CaseEditorSession({ id, catalog, user }: { id: string; catalog?: Catalo
         Все нозологии
       </Link>
       <PageTitle
-        eyebrow="КЛИНИЧЕСКИЙ СЛУЧАЙ"
-        title={name}
-        description="Ответы сохраняются автоматически после выбора или завершения ввода."
+        title="Данные пациента"
+        description={name}
         action={
           <Badge tone="blue">
             <Clock3 size={13} />
@@ -161,7 +172,7 @@ function CaseEditorSession({ id, catalog, user }: { id: string; catalog?: Catalo
             <ErrorNotice
               message={changes.error}
               retry={() => {
-                if (form.current?.reportValidity()) changes.retry();
+                if (validateForm()) changes.retry();
               }}
             />
           )}
@@ -195,25 +206,37 @@ function CaseEditorSession({ id, catalog, user }: { id: string; catalog?: Catalo
           {!!unknown.length && !changes.dirty && !changes.saving && !editing && (
             <div className="notice warning" data-testid="missing-input-notice">
               <HelpCircle size={21} />
-              <div>
-                <strong>Ответ «неизвестно» сохранён</strong>
-                <p>
-                  Текущий алгоритм требует уточнить: {unknown.map((q) => clinicalText(q.label_ru)).join('; ')}
-                  . Укажите данные ниже, когда они будут доступны. Можно вернуться к этому черновику позже.
-                </p>
-              </div>
+              <div>Неизвестно: {unknown.map((q) => clinicalText(q.label_ru)).join('; ')}.</div>
             </div>
           )}
           <form
             ref={form}
+            noValidate
             onSubmit={(e) => {
               e.preventDefault();
+              if (!validateForm()) return;
               if (editing) {
                 changes.fact(editing.fact.fact_code, editing.value, true);
                 setEditing(null);
               } else changes.retry();
             }}
           >
+            {!!retained.length && (
+              <section className="filled-fields" aria-label="Введённые данные">
+                {retained.map((question) => (
+                  <div className="grouped-fact" data-testid="answered-fact" key={question.fact_code}>
+                    <h2>{clinicalText(question.label_ru)}</h2>
+                    <FactInput
+                      fact={question}
+                      value={facts[question.fact_code] || { state: 'NOT_ASSESSED', value: null }}
+                      disabled={busy || !!editing}
+                      onChange={(value, commit = true) => changes.fact(question.fact_code, value, commit)}
+                      onCommit={() => changes.commitFact(question.fact_code)}
+                    />
+                  </div>
+                ))}
+              </section>
+            )}
             <section ref={anchor} tabIndex={-1} className="panel question-card" data-testid="question-card">
               {fields.length ? (
                 <>
@@ -222,7 +245,7 @@ function CaseEditorSession({ id, catalog, user }: { id: string; catalog?: Catalo
                       {editing
                         ? 'ИЗМЕНЕНИЕ ОТВЕТА'
                         : fields.length > 1
-                          ? 'ДАННЫЕ ДЛЯ СЛЕДУЮЩЕГО ШАГА'
+                          ? 'ПРИЗНАКИ И ОГРАНИЧЕНИЯ'
                           : 'КЛИНИЧЕСКИЕ ДАННЫЕ'}
                     </span>
                   </div>
@@ -299,9 +322,6 @@ function CaseEditorSession({ id, catalog, user }: { id: string; catalog?: Catalo
             </section>
             {changes.dirty && !changes.saving && !editing && (
               <div className="save-bar">
-                <span className="inline-hint">
-                  Ввод сохранён в этом браузере. Завершите поле или повторите сохранение.
-                </span>
                 <button className="button secondary" type="submit">
                   <Save size={16} />
                   {changes.error ? 'Повторить сохранение' : 'Сохранить ввод'}
@@ -335,14 +355,12 @@ function CaseEditorSession({ id, catalog, user }: { id: string; catalog?: Catalo
             </>
           )}
           <div className="finish-bar">
-            <span>Результат сохранится отдельным снимком данных.</span>
             <button className="button primary" disabled={busy || !ready} onClick={() => void saveResult()}>
               <FileText size={17} />
               Сохранить результат
               <ArrowRight size={16} />
             </button>
           </div>
-          <PrivacyNote />
         </section>
         <aside className="case-context">
           <section className="panel context-panel">
@@ -374,7 +392,7 @@ function CaseEditorSession({ id, catalog, user }: { id: string; catalog?: Catalo
                 ))}
               </ul>
             ) : (
-              <p className="context-empty">Здесь появятся ответы. Нажмите на ответ, чтобы изменить его.</p>
+              <p className="context-empty">Пока нет ответов</p>
             )}
           </section>
         </aside>
@@ -396,6 +414,8 @@ function FactInput({
   onCommit: () => void;
   disabled: boolean;
 }) {
+  const [validationError, setValidationError] = useState('');
+  const [errorAttempt, setErrorAttempt] = useState(0);
   const known = (v: boolean | number | string | null): FactValue => ({
     state: 'KNOWN',
     value: v,
@@ -403,7 +423,7 @@ function FactInput({
   });
   const numeric = fact.data_type === 'INTEGER' || fact.data_type === 'DECIMAL';
   return (
-    <div className="fact-input">
+    <div className={`fact-input ${validationError ? `error-motion-${errorAttempt % 2}` : ''}`}>
       <fieldset disabled={disabled}>
         <legend className="sr-only">{clinicalText(fact.label_ru)}</legend>
         {fact.data_type === 'BOOLEAN' ? (
@@ -460,8 +480,29 @@ function FactInput({
                     min={fact.min_value ?? undefined}
                     max={fact.max_value ?? undefined}
                     value={value.state === 'KNOWN' ? String(value.value ?? '') : ''}
+                    aria-invalid={validationError ? 'true' : undefined}
+                    aria-describedby={validationError ? `error-${fact.fact_code}` : undefined}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      const validity = e.currentTarget.validity;
+                      setValidationError(
+                        validity.rangeUnderflow
+                          ? `Значение не меньше ${fact.min_value}.`
+                          : validity.rangeOverflow
+                            ? `Значение не больше ${fact.max_value}.`
+                            : validity.stepMismatch
+                              ? 'Введите целое число.'
+                              : numeric
+                                ? 'Введите корректное число.'
+                                : 'Проверьте значение.',
+                      );
+                      setErrorAttempt((attempt) => attempt + 1);
+                    }}
                     onBlur={(e) => {
-                      if (e.currentTarget.reportValidity()) onCommit();
+                      if (e.currentTarget.checkValidity()) {
+                        setValidationError('');
+                        onCommit();
+                      }
                     }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
@@ -469,24 +510,33 @@ function FactInput({
                         e.currentTarget.blur();
                       }
                     }}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      setValidationError('');
                       onChange(
                         e.target.value === ''
                           ? { state: 'NOT_ASSESSED', value: null }
                           : known(numeric ? Number(e.target.value) : e.target.value),
                         false,
-                      )
-                    }
+                      );
+                    }}
                   />
                   {fact.unit && <span>{displayUnit(fact.unit)}</span>}
                 </div>
+              )}
+              {validationError && (
+                <span id={`error-${fact.fact_code}`} className="field-error" role="alert">
+                  {validationError}
+                </span>
               )}
             </div>
             <button
               type="button"
               className={`unknown-option ${value.state === 'UNKNOWN' ? 'selected' : ''}`}
               aria-pressed={value.state === 'UNKNOWN'}
-              onClick={() => onChange({ state: 'UNKNOWN', value: null })}
+              onClick={() => {
+                setValidationError('');
+                onChange({ state: 'UNKNOWN', value: null });
+              }}
             >
               <HelpCircle size={16} />
               Неизвестно
@@ -497,7 +547,10 @@ function FactInput({
           <button
             className="text-button reset-fact"
             type="button"
-            onClick={() => onChange({ state: 'NOT_ASSESSED', value: null })}
+            onClick={() => {
+              setValidationError('');
+              onChange({ state: 'NOT_ASSESSED', value: null });
+            }}
           >
             Сбросить: не оценивалось
           </button>
@@ -555,7 +608,6 @@ function MedicationInput({
           </span>
           <div>
             <h2>Сопутствующая терапия</h2>
-            <p>Для проверки лекарственных взаимодействий</p>
           </div>
         </div>
         <button

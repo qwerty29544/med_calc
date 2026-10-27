@@ -37,54 +37,16 @@ export function Login({ demo }: { demo: boolean }) {
   return (
     <main className="login-page">
       <section className="login-brand">
-        <div className="brand large">
-          <span className="brand-mark">
-            <Activity />
-          </span>
-          <span>
-            клиника<span className="brand-dot">.</span>
-          </span>
-        </div>
         <div className="login-message">
-          <span className="pill-light">
-            <ShieldCheck size={15} />
-            Поддержка врачебных решений
-          </span>
-          <h1>
-            Клиническое решение.
-            <br />
-            <span>Прозрачный путь.</span>
-          </h1>
-          <p>От данных пациента до объяснимой рекомендации по антибактериальной терапии.</p>
-          <div className="login-points">
-            {[
-              'Шесть нозологий в одном пространстве',
-              'Последовательные клинические вопросы',
-              'Источники и объяснение каждого решения',
-            ].map((x) => (
-              <div key={x}>
-                <span>
-                  <Check size={15} />
-                </span>
-                {x}
-              </div>
-            ))}
-          </div>
+          <h1>Клинический расчёт</h1>
         </div>
-        <div className="login-footer">
-          Для взрослых амбулаторных пациентов<span>Версия 0.1.0</span>
-        </div>
-        <div className="orb orb-one" />
-        <div className="orb orb-two" />
       </section>
       <section className="login-form-side">
         <div className="login-form">
           <div className="login-lock">
             <LockKeyhole size={24} />
           </div>
-          <div className="eyebrow">РАБОЧЕЕ ПРОСТРАНСТВО</div>
           <h2>Войти в рабочее пространство</h2>
-          <p>Используйте учётную запись вашей организации.</p>
           <form onSubmit={submit} className="stack">
             {error && <ErrorNotice message={error} />}
             <div className="field">
@@ -126,9 +88,8 @@ export function Login({ demo }: { demo: boolean }) {
             </button>
           </form>
           {demo && (
-            <div className="demo-login">
-              <BadgeLabel />
-              <p>Тестовый контент DRAFT. Не используйте для назначения лечения.</p>
+            <details className="quick-login">
+              <summary>Быстрый вход</summary>
               <div className="demo-accounts">
                 {[
                   ['doctor', 'Врач'],
@@ -145,25 +106,13 @@ export function Login({ demo }: { demo: boolean }) {
                     }}
                   >
                     <span>{label}</span>
-                    <code>
-                      {login} / {login}-demo-2026
-                    </code>
                   </button>
                 ))}
               </div>
-            </div>
+            </details>
           )}
-          <div className="login-disclaimer">
-            <ShieldCheck size={17} />
-            Система помогает врачу принять решение.
-            <br />
-            Ответственность за назначение остаётся у врача.
-          </div>
         </div>
       </section>
     </main>
   );
-}
-function BadgeLabel() {
-  return <strong className="demo-login-title">Демонстрационные учётные записи</strong>;
 }

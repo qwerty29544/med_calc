@@ -82,13 +82,6 @@ export function ContentPage() {
         title="Медицинский контент"
         description="Импорт, проверка и публикация версий клинических правил."
       />
-      <div className="notice neutral">
-        <GitBranch size={20} />
-        <div>
-          <strong>Управляемый жизненный цикл</strong>
-          <p>Черновик → проверка → валидация → публикация → активация. Опубликованные версии неизменяемы.</p>
-        </div>
-      </div>
       <div className="admin-content-grid">
         <section className="panel packages-panel">
           <div className="panel-heading">
@@ -483,11 +476,7 @@ export function UsersPage() {
   }
   return (
     <>
-      <PageTitle
-        eyebrow="СИСТЕМНОЕ АДМИНИСТРИРОВАНИЕ"
-        title="Пользователи"
-        description="Управление учётными записями, ролями и доступом к системе."
-      />
+      <PageTitle eyebrow="СИСТЕМНОЕ АДМИНИСТРИРОВАНИЕ" title="Пользователи" />
       {error && <ErrorNotice message={error} />}
       {success && <Success>{success}</Success>}
       <div className="admin-content-grid users-grid">
@@ -495,7 +484,6 @@ export function UsersPage() {
           <div className="panel-heading">
             <div>
               <h2>Учётные записи</h2>
-              <p>Права применяются сервером для каждого запроса</p>
             </div>
             <Badge>{users.data?.length || 0}</Badge>
           </div>
@@ -557,7 +545,6 @@ export function UsersPage() {
             <Users size={23} />
           </span>
           <h2>Новый пользователь</h2>
-          <p>Выдайте доступ с подходящей рабочей ролью.</p>
           <form className="stack" onSubmit={create}>
             <fieldset disabled={busy} className="stack">
               <div className="field">
